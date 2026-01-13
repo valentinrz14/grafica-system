@@ -36,7 +36,7 @@ export function useUpdateOrderStatus() {
       status,
     }: {
       id: string;
-      status: 'PENDING' | 'PRINTING' | 'DONE';
+      status: 'PENDING' | 'PRINTING' | 'DONE' | 'EXPIRED';
     }) => apiClient.updateOrderStatus(id, status),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });

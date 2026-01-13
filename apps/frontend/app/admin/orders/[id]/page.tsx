@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { apiClient, Order } from '@/lib/api-client';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge.component';
 import { FilePreview } from '@/components/file-preview';
 import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner.component';
@@ -11,6 +9,7 @@ import { ArrowLeft, Mail, Calendar, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/context/toast-context';
 import { AuthGuard } from '@/components/auth-guard';
+import { useOrder, useUpdateOrderStatus } from '@/lib/hooks/use-orders';
 
 export default function OrderDetailPage() {
   const { showToast } = useToast();
@@ -18,41 +17,31 @@ export default function OrderDetailPage() {
   const router = useRouter();
   const orderId = params.id as string;
 
-  const [order, setOrder] = useState<Order | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const {
+    data: order,
+    isLoading,
+    error,
+  } = useOrder(orderId);
+  const updateOrderStatus = useUpdateOrderStatus();
 
-  useEffect(() => {
-    loadOrder();
-  }, [orderId]);
-
-  const loadOrder = async () => {
-    setIsLoading(true);
-    try {
-      const data = await apiClient.getOrder(orderId);
-      setOrder(data);
-    } catch (error) {
-      showToast('Error al cargar el pedido', 'error');
-      router.push('/admin');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (error) {
+    showToast('Error al cargar el pedido', 'error');
+    router.push('/admin');
+  }
 
   const handleStatusChange = async (
-    newStatus: 'PENDING' | 'PRINTING' | 'DONE',
+    newStatus: 'PENDING' | 'PRINTING' | 'DONE' | 'EXPIRED',
   ) => {
     if (!order) return;
 
-    setIsUpdating(true);
     try {
-      const updated = await apiClient.updateOrderStatus(order.id, newStatus);
-      setOrder(updated);
+      await updateOrderStatus.mutateAsync({
+        id: order.id,
+        status: newStatus,
+      });
       showToast('Estado actualizado correctamente', 'success');
     } catch (error) {
       showToast('Error al actualizar el estado', 'error');
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -181,21 +170,28 @@ export default function OrderDetailPage() {
                   <div className="space-y-3">
                     <button
                       onClick={() => handleStatusChange('PENDING')}
-                      disabled={isUpdating || order.status === 'PENDING'}
+                      disabled={
+                        updateOrderStatus.isPending || order.status === 'PENDING'
+                      }
                       className="w-full px-4 py-3 rounded-lg text-left font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-yellow-50 text-yellow-800 hover:bg-yellow-100 border border-yellow-200"
                     >
                       Pendiente
                     </button>
                     <button
                       onClick={() => handleStatusChange('PRINTING')}
-                      disabled={isUpdating || order.status === 'PRINTING'}
+                      disabled={
+                        updateOrderStatus.isPending ||
+                        order.status === 'PRINTING'
+                      }
                       className="w-full px-4 py-3 rounded-lg text-left font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200"
                     >
                       En impresión
                     </button>
                     <button
                       onClick={() => handleStatusChange('DONE')}
-                      disabled={isUpdating || order.status === 'DONE'}
+                      disabled={
+                        updateOrderStatus.isPending || order.status === 'DONE'
+                      }
                       className="w-full px-4 py-3 rounded-lg text-left font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-green-50 text-green-800 hover:bg-green-100 border border-green-200"
                     >
                       Listo

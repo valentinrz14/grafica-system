@@ -13,7 +13,7 @@ import { useOrders } from '@/lib/hooks/use-orders';
 export default function AdminPage() {
   const { showToast } = useToast();
   const [statusFilter, setStatusFilter] = useState<
-    'ALL' | 'PENDING' | 'PRINTING' | 'DONE'
+    'ALL' | 'PENDING' | 'PRINTING' | 'DONE' | 'EXPIRED'
   >('ALL');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,7 +63,9 @@ export default function AdminPage() {
     return filtered;
   }, [orders, statusFilter, searchQuery, dateFilter]);
 
-  const getOrderCount = (status: 'ALL' | 'PENDING' | 'PRINTING' | 'DONE') => {
+  const getOrderCount = (
+    status: 'ALL' | 'PENDING' | 'PRINTING' | 'DONE' | 'EXPIRED',
+  ) => {
     if (status === 'ALL') return orders.length;
     return orders.filter((o) => o.status === status).length;
   };
@@ -164,7 +166,7 @@ export default function AdminPage() {
             </div>
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2">
-              <div className="grid grid-cols-2 md:flex gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                 <button
                   onClick={() => setStatusFilter('ALL')}
                   className={`px-3 md:flex-1 md:px-6 py-2 md:py-3 rounded-md text-xs md:text-sm font-medium transition-colors ${
@@ -204,6 +206,16 @@ export default function AdminPage() {
                   }`}
                 >
                   Listos ({getOrderCount('DONE')})
+                </button>
+                <button
+                  onClick={() => setStatusFilter('EXPIRED')}
+                  className={`px-3 md:flex-1 md:px-6 py-2 md:py-3 rounded-md text-xs md:text-sm font-medium transition-colors ${
+                    statusFilter === 'EXPIRED'
+                      ? 'bg-red-500 text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  Vencidos ({getOrderCount('EXPIRED')})
                 </button>
               </div>
             </div>
