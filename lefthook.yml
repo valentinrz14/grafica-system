@@ -1,0 +1,46 @@
+# Lefthook configuration
+# https://github.com/evilmartians/lefthook
+
+# Pre-commit hook: ejecuta linting y formateo antes de cada commit
+pre-commit:
+  parallel: true
+  commands:
+    # Lint backend
+    lint-backend:
+      glob: 'apps/backend/**/*.{ts,js}'
+      run: cd apps/backend && npm run lint
+      stage_fixed: true
+
+    # Format code with Prettier
+    prettier:
+      glob: '*.{ts,tsx,js,jsx,json,md,yml,yaml}'
+      run: npx prettier --write {staged_files}
+      stage_fixed: true
+
+# Commit-msg hook: valida el mensaje de commit con commitlint
+commit-msg:
+  commands:
+    commitlint:
+      run: npx commitlint --edit {1}
+
+# Pre-push hook: ejecuta tests y build antes de push
+pre-push:
+  parallel: false
+  commands:
+    # Build backend
+    build-backend:
+      run: cd apps/backend && npm run build
+
+    # Build frontend
+    build-frontend:
+      run: cd apps/frontend && npm run build
+
+# Post-merge hook: instala dependencias después de merge
+post-merge:
+  commands:
+    install-deps:
+      run: |
+        if [ -f "package-lock.json.merge" ] || git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep --quiet "package-lock.json"; then
+          echo "📦 Dependencies changed, running npm install..."
+          npm install
+        fi
