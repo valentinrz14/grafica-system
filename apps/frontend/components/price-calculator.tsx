@@ -59,9 +59,24 @@ export function PriceCalculator({
             min="1"
             max="1000"
             value={options.quantity}
-            onChange={(e) =>
-              handleChange('quantity', parseInt(e.target.value) || 1)
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              // Allow empty string or valid numbers while typing
+              if (value === '') {
+                return; // Don't update state, allow empty temporarily
+              }
+              const numValue = parseInt(value);
+              if (!isNaN(numValue) && numValue >= 1 && numValue <= 1000) {
+                handleChange('quantity', numValue);
+              }
+            }}
+            onBlur={(e) => {
+              // Ensure valid value on blur
+              const value = parseInt(e.target.value);
+              if (isNaN(value) || value < 1) {
+                handleChange('quantity', 1);
+              }
+            }}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
             style={{
               fontSize: '16px',
