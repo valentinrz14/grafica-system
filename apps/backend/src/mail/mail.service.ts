@@ -91,6 +91,11 @@ export class MailService {
         return;
       }
 
+      // Register Handlebars helpers
+      handlebars.registerHelper('gt', function (a, b) {
+        return a > b;
+      });
+
       // Read and compile the email template
       // Use absolute path from project root to ensure template is found
       const templatePath = path.join(
