@@ -119,6 +119,41 @@ export default function HomePage() {
     showToast('Sesión cerrada exitosamente', 'success');
   };
 
+  // Validate pickup date and time
+  const isPickupValid = () => {
+    // If both are provided, validate them
+    if (pickupDate && pickupTime) {
+      const selectedDate = new Date(pickupDate);
+      const dayOfWeek = selectedDate.getDay();
+
+      // Check if it's Sunday (0)
+      if (dayOfWeek === 0) {
+        return false;
+      }
+
+      // Check time range
+      const [hours] = pickupTime.split(':').map(Number);
+      if (hours < 8 || hours >= 19) {
+        return false;
+      }
+    }
+    // If only one is provided, it's invalid
+    if ((pickupDate && !pickupTime) || (!pickupDate && pickupTime)) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const canCreateOrder = () => {
+    return (
+      isAuthenticated &&
+      uploadedFiles.length > 0 &&
+      !isCreatingOrder &&
+      isPickupValid()
+    );
+  };
+
   const handleCreateOrder = async () => {
     // Verificar autenticación primero
     if (!isAuthenticated || !user) {
@@ -139,6 +174,15 @@ export default function HomePage() {
 
     if (uploadedFiles.length === 0) {
       showToast('Por favor subí al menos un archivo.', 'warning');
+      return;
+    }
+
+    // Validate pickup date and time
+    if (!isPickupValid()) {
+      showToast(
+        'Por favor seleccioná una fecha y hora de retiro válida (Lunes a Sábados, 8:00 AM - 7:00 PM)',
+        'warning',
+      );
       return;
     }
 
@@ -565,7 +609,7 @@ export default function HomePage() {
 
                   <button
                     onClick={handleCreateOrder}
-                    disabled={isCreatingOrder}
+                    disabled={!canCreateOrder()}
                     className="w-full bg-blue-600 text-white font-semibold py-4 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
                     {isCreatingOrder
