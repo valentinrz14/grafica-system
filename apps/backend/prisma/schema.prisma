@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,17 +10,16 @@ model User {
   id              String   @id @default(cuid())
   email           String   @unique
   passwordHash    String?  @map("password_hash")
-  role            UserRole @default(USER)
-  firstName       String?  @map("first_name")
-  lastName        String?  @map("last_name")
-  phoneNumber     String?  @map("phone_number")
-  googleId        String?  @unique @map("google_id")
-  oauthProvider   String?  @map("oauth_provider")
-  profileComplete Boolean  @default(false) @map("profile_complete")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
-
-  orders Order[]
+  role            UserRole @default(USER)
+  firstName       String?  @map("first_name")
+  googleId        String?  @unique @map("google_id")
+  lastName        String?  @map("last_name")
+  oauthProvider   String?  @map("oauth_provider")
+  phoneNumber     String?  @map("phone_number")
+  profileComplete Boolean  @default(false) @map("profile_complete")
+  orders          Order[]
 
   @@index([googleId])
   @@map("users")
@@ -31,19 +27,18 @@ model User {
 
 model Order {
   id         String      @id @default(cuid())
-  userId     String?     @map("user_id")
   userEmail  String?     @map("user_email")
   status     OrderStatus @default(PENDING)
   totalPrice Float       @map("total_price")
-  options    Json        // { size, isColor, isDuplex, quantity }
-  comment    String?     // Comentario opcional del cliente
-  pickupDate DateTime?   @map("pickup_date") // Fecha de retiro
-  pickupTime String?     @map("pickup_time") // Hora de retiro (formato HH:mm)
+  options    Json
   createdAt  DateTime    @default(now()) @map("created_at")
   updatedAt  DateTime    @updatedAt @map("updated_at")
-
-  files OrderFile[]
-  user  User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?     @map("user_id")
+  comment    String?
+  pickupDate DateTime?   @map("pickup_date")
+  pickupTime String?     @map("pickup_time")
+  files      OrderFile[]
+  user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@index([createdAt])
@@ -59,8 +54,7 @@ model OrderFile {
   originalName String   @map("original_name")
   pages        Int      @default(1)
   createdAt    DateTime @default(now()) @map("created_at")
-
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
   @@map("order_files")

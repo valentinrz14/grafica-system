@@ -13,12 +13,14 @@ import {
 import { CheckCircle, Printer, LogIn, LogOut, User, Menu } from 'lucide-react';
 import { useToast } from '@/context/toast-context';
 import { useAuth } from '@/context/auth-context';
+import { useCreateOrder } from '@/lib/hooks/use-orders';
 import { MobileMenu } from '@/components/mobile-menu';
 
 export default function HomePage() {
   const router = useRouter();
   const { showToast } = useToast();
   const { isAuthenticated, user, logout, isLoading: authLoading } = useAuth();
+  const createOrder = useCreateOrder();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -200,7 +202,7 @@ export default function HomePage() {
 
     setIsCreatingOrder(true);
     try {
-      await apiClient.createOrder({
+      await createOrder.mutateAsync({
         userEmail: user.email,
         options,
         files: uploadedFiles,

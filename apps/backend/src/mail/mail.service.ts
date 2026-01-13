@@ -92,8 +92,11 @@ export class MailService {
       }
 
       // Read and compile the email template
+      // Use absolute path from project root to ensure template is found
       const templatePath = path.join(
-        __dirname,
+        process.cwd(),
+        'src',
+        'mail',
         'templates',
         'order-confirmation.hbs',
       );
