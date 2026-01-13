@@ -1,0 +1,136 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run backend tests
+        working-directory: apps/backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          JWT_SECRET: test-secret-key-for-ci-pipeline-testing-only
+          JWT_EXPIRATION: 8h
+        run: npm run test
+
+      - name: Run backend test coverage
+        working-directory: apps/backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          JWT_SECRET: test-secret-key-for-ci-pipeline-testing-only
+          JWT_EXPIRATION: 8h
+        run: npm run test:cov
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: apps/backend/coverage/lcov.info
+          flags: backend
+          name: backend-coverage
+        continue-on-error: true
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run frontend linting
+        working-directory: apps/frontend
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: apps/frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000
+        run: npm run build
+
+      # Placeholder for future frontend tests
+      # - name: Run frontend tests
+      #   working-directory: apps/frontend
+      #   run: npm run test
+
+  build-validation:
+    name: Build Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        working-directory: apps/backend
+        run: npx prisma generate
+
+      - name: Build backend
+        working-directory: apps/backend
+        run: npm run build
+
+      - name: Build frontend
+        working-directory: apps/frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000
+        run: npm run build
+
+      - name: Check TypeScript (backend)
+        working-directory: apps/backend
+        run: npx tsc --noEmit --skipLibCheck
+
+      - name: Check TypeScript (frontend)
+        working-directory: apps/frontend
+        run: npx tsc --noEmit --skipLibCheck
