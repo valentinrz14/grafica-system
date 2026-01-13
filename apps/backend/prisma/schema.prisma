@@ -10,15 +10,22 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String?  @map("password_hash")
-  role         UserRole @default(USER)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String?  @map("password_hash")
+  role            UserRole @default(USER)
+  firstName       String?  @map("first_name")
+  lastName        String?  @map("last_name")
+  phoneNumber     String?  @map("phone_number")
+  googleId        String?  @unique @map("google_id")
+  oauthProvider   String?  @map("oauth_provider")
+  profileComplete Boolean  @default(false) @map("profile_complete")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   orders Order[]
 
+  @@index([googleId])
   @@map("users")
 }
 

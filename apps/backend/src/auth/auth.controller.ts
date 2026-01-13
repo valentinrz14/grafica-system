@@ -1,13 +1,28 @@
-import { Controller, Post, Body, HttpStatus, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  HttpStatus,
+  HttpCode,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { CompleteProfileDto } from './dto/complete-profile.dto';
 import { Public } from './decorators/public.decorator';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private usersService: UsersService,
+  ) {}
 
   @Public()
   @Post('register')
@@ -31,6 +46,48 @@ export class AuthController {
       statusCode: HttpStatus.OK,
       message: 'Login successful',
       data: result,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('complete-profile')
+  @HttpCode(HttpStatus.OK)
+  async completeProfile(
+    @Req() req: any,
+    @Body() profileDto: CompleteProfileDto,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const userId = req.user.id;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const result = await this.authService.completeProfile(userId, profileDto);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Profile completed successfully',
+      data: result,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  @HttpCode(HttpStatus.OK)
+  async getProfile(@Req() req: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const userId = req.user.id;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const user = await this.usersService.findById(userId);
+    return {
+      statusCode: HttpStatus.OK,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phoneNumber: user.phoneNumber,
+          profileComplete: user.profileComplete,
+        },
+      },
     };
   }
 }
