@@ -100,6 +100,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
+    // Redirect to login page after logout
+    window.location.href = '/login';
   }, []);
 
   const isAuthenticated = !!user && !!token;
