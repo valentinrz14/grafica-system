@@ -123,7 +123,9 @@ export default function HomePage() {
   const isPickupValid = () => {
     // If both are provided, validate them
     if (pickupDate && pickupTime) {
-      const selectedDate = new Date(pickupDate);
+      // Parse date in local timezone to avoid UTC conversion issues
+      const [year, month, day] = pickupDate.split('-').map(Number);
+      const selectedDate = new Date(year, month - 1, day);
       const dayOfWeek = selectedDate.getDay();
 
       // Check if it's Sunday (0)
