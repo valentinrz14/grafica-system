@@ -6,8 +6,8 @@ import { Settings, Package, Search, X } from 'lucide-react';
 import { useToast } from '@/context/toast-context';
 import { AuthGuard } from '@/components/auth-guard';
 import { MobileMenu } from '@/components/mobile-menu';
-import { PageHeader } from '@/components/page-header';
-import { LoadingSpinner } from '@/components/loading-spinner';
+import { PageHeader } from '@/components/PageHeader/PageHeader.component';
+import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner.component';
 import { useOrders } from '@/lib/hooks/use-orders';
 
 export default function AdminPage() {

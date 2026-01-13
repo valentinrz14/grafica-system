@@ -1,10 +1,5 @@
 import { Loader2 } from 'lucide-react';
-
-interface LoadingSpinnerProps {
-  text?: string;
-  size?: 'sm' | 'md' | 'lg';
-  fullScreen?: boolean;
-}
+import { LoadingSpinnerProps } from './LoadingSpinner.interface';
 
 export function LoadingSpinner({
   text = 'Cargando...',

@@ -2,17 +2,7 @@
 
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-
-interface PasswordInputProps {
-  id: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  label?: string;
-  helperText?: string;
-  className?: string;
-}
+import { PasswordInputProps } from './PasswordInput.interface';
 
 export function PasswordInput({
   id,

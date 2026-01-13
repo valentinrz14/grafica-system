@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient, Order } from '@/lib/api-client';
-import { StatusBadge } from '@/components/status-badge';
+import { StatusBadge } from '@/components/StatusBadge/StatusBadge.component';
 import { FilePreview } from '@/components/file-preview';
-import { LoadingSpinner } from '@/components/loading-spinner';
+import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner.component';
 import { formatOrderDate } from '@/lib/utils';
 import { ArrowLeft, Mail, Calendar, Package } from 'lucide-react';
 import Link from 'next/link';

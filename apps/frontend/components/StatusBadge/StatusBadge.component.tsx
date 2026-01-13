@@ -1,8 +1,4 @@
-type OrderStatus = 'PENDING' | 'PRINTING' | 'DONE';
-
-interface StatusBadgeProps {
-  status: OrderStatus;
-}
+import { StatusBadgeProps } from './StatusBadge.interface';
 
 const statusConfig = {
   PENDING: {

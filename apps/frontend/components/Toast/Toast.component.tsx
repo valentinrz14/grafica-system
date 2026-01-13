@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
-import { Toast as ToastType } from '@/context/toast-context';
-
-interface ToastProps extends ToastType {
-  onClose: () => void;
-}
+import { ToastProps } from './Toast.interface';
 
 const icons = {
   success: CheckCircle,
@@ -22,12 +18,11 @@ const styles = {
   info: 'bg-blue-500 text-white',
 };
 
-export function Toast({ id, message, type, onClose }: ToastProps) {
+export function Toast({ message, type, onClose }: ToastProps) {
   const [isExiting, setIsExiting] = useState(false);
   const Icon = icons[type];
 
   useEffect(() => {
-    // Trigger exit animation before unmounting
     return () => {
       setIsExiting(true);
     };
@@ -35,7 +30,7 @@ export function Toast({ id, message, type, onClose }: ToastProps) {
 
   const handleClose = () => {
     setIsExiting(true);
-    setTimeout(onClose, 300); // Wait for animation to complete
+    setTimeout(onClose, 300);
   };
 
   return (

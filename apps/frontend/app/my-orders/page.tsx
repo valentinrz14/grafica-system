@@ -9,9 +9,9 @@ import { useToast } from '@/context/toast-context';
 import { useAuth } from '@/context/auth-context';
 import { AuthGuard } from '@/components/auth-guard';
 import { MobileMenu } from '@/components/mobile-menu';
-import { PageHeader } from '@/components/page-header';
-import { LoadingSpinner } from '@/components/loading-spinner';
-import { EmptyState } from '@/components/empty-state';
+import { PageHeader } from '@/components/PageHeader/PageHeader.component';
+import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner.component';
+import { EmptyState } from '@/components/EmptyState/EmptyState.component';
 import { useMyOrders } from '@/lib/hooks/use-orders';
 
 export default function MyOrdersPage() {

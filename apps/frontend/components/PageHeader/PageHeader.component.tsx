@@ -1,25 +1,13 @@
 'use client';
 
-import { ReactNode } from 'react';
 import { LogOut, Menu } from 'lucide-react';
-import { LucideIcon } from 'lucide-react';
 import { useLogout } from '@/lib/hooks/use-logout';
-
-interface PageHeaderProps {
-  title: string;
-  subtitle?: string;
-  icon: LucideIcon;
-  userEmail?: string;
-  actions?: ReactNode;
-  onMenuClick: () => void;
-  showLogout?: boolean;
-}
+import { PageHeaderProps } from './PageHeader.interface';
 
 export function PageHeader({
   title,
   subtitle,
   icon: Icon,
-  userEmail,
   actions,
   onMenuClick,
   showLogout = true,
@@ -43,7 +31,6 @@ export function PageHeader({
               )}
             </div>
           </div>
-
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-3">
             {actions}
@@ -57,7 +44,6 @@ export function PageHeader({
               </button>
             )}
           </div>
-
           {/* Mobile Menu Button */}
           <button
             onClick={onMenuClick}

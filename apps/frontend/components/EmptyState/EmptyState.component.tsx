@@ -1,14 +1,5 @@
-import { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
-
-interface EmptyStateProps {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  actionLabel?: string;
-  actionHref?: string;
-  onAction?: () => void;
-}
+import { EmptyStateProps } from './EmptyState.interface';
 
 export function EmptyState({
   icon: Icon,

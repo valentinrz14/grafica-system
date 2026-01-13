@@ -1,7 +1,7 @@
 'use client';
 
 import { Order } from '@/lib/api-client';
-import { StatusBadge } from './status-badge';
+import { StatusBadge } from './StatusBadge/StatusBadge.component';
 import { formatOrderDate } from '@/lib/utils';
 import { Calendar, Mail, FileText, MessageSquare } from 'lucide-react';
 import Link from 'next/link';

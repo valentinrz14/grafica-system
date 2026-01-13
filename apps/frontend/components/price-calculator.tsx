@@ -30,20 +30,10 @@ export function PriceCalculator({
           <select
             value={options.size}
             onChange={(e) => handleChange('size', e.target.value)}
-            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 appearance-none cursor-pointer"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 cursor-pointer md:appearance-none"
             style={{
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
-              appearance: 'none',
-              fontFamily: 'inherit',
               fontSize: '16px',
-              lineHeight: '1.5',
-              height: '48px',
-              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-              backgroundPosition: 'right 0.5rem center',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: '1.5em 1.5em',
-              paddingRight: '2.5rem',
+              minHeight: '48px',
             }}
           >
             <option value="A4">A4 (21 x 29.7 cm)</option>

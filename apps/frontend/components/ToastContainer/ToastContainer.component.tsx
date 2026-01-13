@@ -1,7 +1,7 @@
 'use client';
 
 import { useToast } from '@/context/toast-context';
-import { Toast } from './toast';
+import { Toast } from '../Toast/Toast.component';
 
 export function ToastContainer() {
   const { toasts, removeToast } = useToast();

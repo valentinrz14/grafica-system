@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/context/toast-context';
-import { PasswordInput } from '@/components/password-input';
+import { PasswordInput } from '@/components/PasswordInput/PasswordInput.component';
 import { UserPlus, Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -143,7 +143,6 @@ export default function RegisterPage() {
               disabled={isLoading}
             />
           </div>
-
           <PasswordInput
             id="password"
             label="Contraseña"
@@ -154,7 +153,6 @@ export default function RegisterPage() {
             helperText="Mínimo 8 caracteres, incluir mayúsculas, minúsculas y números"
             className="focus:ring-green-500"
           />
-
           <PasswordInput
             id="confirmPassword"
             label="Confirmar Contraseña"
@@ -164,7 +162,6 @@ export default function RegisterPage() {
             disabled={isLoading}
             className="focus:ring-green-500"
           />
-
           <button
             type="submit"
             disabled={isLoading}
@@ -180,7 +177,6 @@ export default function RegisterPage() {
             )}
           </button>
         </form>
-
         <div className="mt-6 flex items-center justify-center gap-1 text-sm">
           <span className="text-gray-600">¿Ya tenés cuenta?</span>
           <button
@@ -190,7 +186,6 @@ export default function RegisterPage() {
             Iniciá sesión
           </button>
         </div>
-
         <div className="mt-4 text-center">
           <button
             onClick={() => router.push('/')}

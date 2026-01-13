@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/context/toast-context';
-import { PasswordInput } from '@/components/password-input';
+import { PasswordInput } from '@/components/PasswordInput/PasswordInput.component';
 import { LogIn, Loader2 } from 'lucide-react';
 
 export default function LoginForm() {
