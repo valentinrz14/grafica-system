@@ -198,7 +198,7 @@ export default function HomePage() {
             al email proporcionado.
           </p>
           <p className="text-sm text-gray-500">
-            Redirigiendo a "Mis Pedidos"...
+            Redirigiendo a &quot;Mis Pedidos&quot;...
           </p>
         </div>
       </div>
