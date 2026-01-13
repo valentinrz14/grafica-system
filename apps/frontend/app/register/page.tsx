@@ -12,6 +12,9 @@ export default function RegisterPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { showToast } = useToast();
 
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -40,12 +43,44 @@ export default function RegisterPage() {
     return null;
   };
 
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Validate Argentine phone format
+    const argPhoneRegex =
+      /^(?:(?:\+54\s?)?(?:9\s?)?\d{2,4}\s?\d{3,4}[-\s]?\d{4}|\d{10})$/;
+    return argPhoneRegex.test(phone);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validations
-    if (!email || !password || !confirmPassword) {
+    if (
+      !firstName ||
+      !lastName ||
+      !phoneNumber ||
+      !email ||
+      !password ||
+      !confirmPassword
+    ) {
       showToast('Por favor completá todos los campos', 'warning');
+      return;
+    }
+
+    if (firstName.length > 50) {
+      showToast('El nombre no puede tener más de 50 caracteres', 'warning');
+      return;
+    }
+
+    if (lastName.length > 50) {
+      showToast('El apellido no puede tener más de 50 caracteres', 'warning');
+      return;
+    }
+
+    if (!validatePhoneNumber(phoneNumber)) {
+      showToast(
+        'Formato de teléfono inválido. Ej: +54 9 11 1234-5678 o 1112345678',
+        'warning',
+      );
       return;
     }
 
@@ -72,7 +107,13 @@ export default function RegisterPage() {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            phoneNumber,
+            email,
+            password,
+          }),
         },
       );
 
@@ -126,6 +167,66 @@ export default function RegisterPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Nombre
+              </label>
+              <input
+                id="firstName"
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Juan"
+                maxLength={50}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-gray-900 transition-all duration-200 hover:border-gray-400"
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Apellido
+              </label>
+              <input
+                id="lastName"
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Pérez"
+                maxLength={50}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-gray-900 transition-all duration-200 hover:border-gray-400"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="phoneNumber"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Teléfono
+            </label>
+            <input
+              id="phoneNumber"
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="+54 9 11 1234-5678 o 1112345678"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-gray-900 transition-all duration-200 hover:border-gray-400"
+              disabled={isLoading}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Formato argentino: con o sin código de área
+            </p>
+          </div>
+
           <div>
             <label
               htmlFor="email"
