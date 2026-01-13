@@ -1,6 +1,13 @@
 'use client';
 
 import { OrderOptions, PriceBreakdown } from '@/lib/api-client';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface PriceCalculatorProps {
   options: OrderOptions;
@@ -27,21 +34,19 @@ export function PriceCalculator({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Tamaño del papel
           </label>
-          <select
+          <Select
             value={options.size}
-            onChange={(e) => handleChange('size', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 cursor-pointer"
-            style={{
-              fontSize: '16px',
-              height: '52px',
-              fontFamily:
-                'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-            }}
+            onValueChange={(value) => handleChange('size', value)}
           >
-            <option value="A4">A4 (21 x 29.7 cm)</option>
-            <option value="A3">A3 (29.7 x 42 cm)</option>
-            <option value="CARTA">Carta (21.6 x 27.9 cm)</option>
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar tamaño" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="A4">A4 (21 x 29.7 cm)</SelectItem>
+              <SelectItem value="A3">A3 (29.7 x 42 cm)</SelectItem>
+              <SelectItem value="CARTA">Carta (21.6 x 27.9 cm)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Cantidad */}
