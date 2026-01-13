@@ -28,7 +28,7 @@ export interface PriceBreakdown {
 export interface Order {
   id: string;
   userEmail: string;
-  status: 'PENDING' | 'PRINTING' | 'DONE';
+  status: 'PENDING' | 'PRINTING' | 'DONE' | 'EXPIRED';
   totalPrice: number;
   options: OrderOptions;
   files: UploadedFile[];
@@ -176,7 +176,7 @@ class ApiClient {
 
   async updateOrderStatus(
     id: string,
-    status: 'PENDING' | 'PRINTING' | 'DONE',
+    status: 'PENDING' | 'PRINTING' | 'DONE' | 'EXPIRED',
   ): Promise<Order> {
     const response = await fetch(`${this.baseUrl}/orders/${id}/status`, {
       method: 'PATCH',

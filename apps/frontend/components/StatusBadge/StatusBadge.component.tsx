@@ -13,6 +13,10 @@ const statusConfig = {
     label: 'Listo',
     className: 'bg-green-100 text-green-800 border-green-300',
   },
+  EXPIRED: {
+    label: 'Vencido',
+    className: 'bg-red-100 text-red-800 border-red-300',
+  },
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {

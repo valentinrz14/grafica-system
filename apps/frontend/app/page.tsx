@@ -133,6 +133,16 @@ export default function HomePage() {
         return false;
       }
 
+      // Check if date is more than 7 days in the future
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const maxDate = new Date(today);
+      maxDate.setDate(maxDate.getDate() + 7);
+
+      if (selectedDate > maxDate) {
+        return false;
+      }
+
       // Check time range
       const [hours] = pickupTime.split(':').map(Number);
       if (hours < 8 || hours >= 19) {
@@ -182,7 +192,7 @@ export default function HomePage() {
     // Validate pickup date and time
     if (!isPickupValid()) {
       showToast(
-        'Por favor seleccioná una fecha y hora de retiro válida (Lunes a Sábados, 8:00 AM - 7:00 PM)',
+        'Por favor seleccioná una fecha y hora de retiro válida (Lunes a Sábados, 8:00 AM - 7:00 PM, máximo 7 días desde hoy)',
         'warning',
       );
       return;
@@ -543,7 +553,10 @@ export default function HomePage() {
                           id="pickupDate"
                           value={pickupDate}
                           onChange={(e) => {
-                            const selectedDate = new Date(e.target.value);
+                            const [year, month, day] = e.target.value
+                              .split('-')
+                              .map(Number);
+                            const selectedDate = new Date(year, month - 1, day);
                             const dayOfWeek = selectedDate.getDay();
 
                             // Check if it's Sunday (0)
@@ -555,10 +568,31 @@ export default function HomePage() {
                               return;
                             }
 
+                            // Check if date is more than 7 days in the future
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const maxDate = new Date(today);
+                            maxDate.setDate(maxDate.getDate() + 7);
+
+                            if (selectedDate > maxDate) {
+                              showToast(
+                                'Solo podés programar retiros hasta 7 días desde hoy.',
+                                'warning',
+                              );
+                              return;
+                            }
+
                             setPickupDate(e.target.value);
                           }}
                           min={
                             new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+                              .toISOString()
+                              .split('T')[0]
+                          }
+                          max={
+                            new Date(
+                              new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
+                            )
                               .toISOString()
                               .split('T')[0]
                           }

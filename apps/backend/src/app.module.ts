@@ -9,6 +9,7 @@ import { FilesModule } from './files/files.module';
 import { OrdersModule } from './orders/orders.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
@@ -25,6 +26,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     PricingModule,
     FilesModule,
     OrdersModule,
+    SchedulerModule,
   ],
   controllers: [AppController],
   providers: [

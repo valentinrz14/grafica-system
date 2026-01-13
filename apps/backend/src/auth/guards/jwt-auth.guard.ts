@@ -19,9 +19,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       method: string;
       url: string;
     }>();
-    const route = `${request.method} ${request.url}`;
-
-    console.log(`JWT Guard: Checking route: ${route}`);
 
     const isPublic = this.reflector.getAllAndOverride<boolean>('isPublic', [
       context.getHandler(),
@@ -29,12 +26,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ]);
 
     if (isPublic) {
-      console.log(`JWT Guard: Route is public, allowing`);
       return true;
     }
 
     const authHeader = request.headers.authorization;
-    console.log(`JWT Guard: Auth header present: ${!!authHeader}`);
 
     if (authHeader) {
       console.log(
@@ -45,24 +40,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest<TUser = any>(
-    err: Error | null,
-    user: User,
-    info: Error | null,
-  ): TUser {
-    console.log('JWT Guard: handleRequest called', {
-      hasError: !!err,
-      hasUser: !!user,
-      info: info?.message || info,
-      errorMessage: err?.message,
-    });
-
+  handleRequest<TUser = any>(err: Error | null, user: User): TUser {
     if (err || !user) {
-      console.error('JWT Guard: Authentication failed', {
-        error: err?.message,
-        info: info?.message || info,
-        hasUser: !!user,
-      });
       throw err || new UnauthorizedException('Authentication required');
     }
 

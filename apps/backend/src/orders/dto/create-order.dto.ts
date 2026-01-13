@@ -22,7 +22,7 @@ export enum PaperSize {
   CARTA = 'CARTA',
 }
 
-// Custom validator for pickup date (Monday-Saturday only)
+// Custom validator for pickup date (Monday-Saturday only, max 7 days from now)
 function IsWeekday(validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
     registerDecorator({
@@ -36,11 +36,29 @@ function IsWeekday(validationOptions?: ValidationOptions) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           const date = new Date(value);
           const dayOfWeek = date.getDay();
+
           // 0 = Sunday, 6 = Saturday. We want 1-6 (Monday-Saturday)
-          return dayOfWeek >= 1 && dayOfWeek <= 6;
+          if (dayOfWeek < 1 || dayOfWeek > 6) {
+            return false;
+          }
+
+          // Check if date is more than 7 days in the future
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const maxDate = new Date(today);
+          maxDate.setDate(maxDate.getDate() + 7);
+
+          const pickupDate = new Date(date);
+          pickupDate.setHours(0, 0, 0, 0);
+
+          if (pickupDate > maxDate) {
+            return false;
+          }
+
+          return true;
         },
         defaultMessage() {
-          return 'La fecha de retiro debe ser de lunes a sábado';
+          return 'La fecha de retiro debe ser de lunes a sábado y no mayor a 7 días desde hoy';
         },
       },
     });
