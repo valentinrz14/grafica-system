@@ -30,10 +30,12 @@ export function PriceCalculator({
           <select
             value={options.size}
             onChange={(e) => handleChange('size', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 cursor-pointer md:appearance-none"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 cursor-pointer"
             style={{
               fontSize: '16px',
-              minHeight: '48px',
+              height: '52px',
+              fontFamily:
+                'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
             }}
           >
             <option value="A4">A4 (21 x 29.7 cm)</option>
@@ -55,7 +57,13 @@ export function PriceCalculator({
             onChange={(e) =>
               handleChange('quantity', parseInt(e.target.value) || 1)
             }
-            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+            style={{
+              fontSize: '16px',
+              height: '52px',
+              fontFamily:
+                'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            }}
           />
         </div>
       </div>
