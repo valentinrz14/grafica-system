@@ -37,6 +37,8 @@ model Order {
   totalPrice Float       @map("total_price")
   options    Json        // { size, isColor, isDuplex, quantity }
   comment    String?     // Comentario opcional del cliente
+  pickupDate DateTime?   @map("pickup_date") // Fecha de retiro
+  pickupTime String?     @map("pickup_time") // Hora de retiro (formato HH:mm)
   createdAt  DateTime    @default(now()) @map("created_at")
   updatedAt  DateTime    @updatedAt @map("updated_at")
 

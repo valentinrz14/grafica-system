@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PricingService } from '../pricing/pricing.service';
+import { MailService } from '../mail/mail.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
@@ -10,10 +11,12 @@ export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private pricingService: PricingService,
+    private mailService: MailService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
-    const { userEmail, options, files, comment } = createOrderDto;
+    const { userEmail, options, files, comment, pickupDate, pickupTime } =
+      createOrderDto;
 
     const totalPages = files.reduce((sum, file) => sum + file.pages, 0);
 
@@ -31,6 +34,8 @@ export class OrdersService {
         totalPrice: priceBreakdown.total,
         options: options as unknown as Prisma.JsonObject,
         comment: comment || null,
+        pickupDate: pickupDate || null,
+        pickupTime: pickupTime || null,
         files: {
           create: files.map((file) => ({
             fileUrl: file.fileUrl,
@@ -42,8 +47,54 @@ export class OrdersService {
       },
       include: {
         files: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
+
+    // Send order confirmation email
+    const userName =
+      order.user?.firstName && order.user?.lastName
+        ? `${order.user.firstName} ${order.user.lastName}`
+        : userEmail.split('@')[0];
+
+    const formattedPickupDate = pickupDate
+      ? new Date(pickupDate).toLocaleDateString('es-AR', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      : undefined;
+
+    this.mailService
+      .sendOrderConfirmation({
+        orderId: order.id,
+        userEmail: order.userEmail!,
+        userName,
+        files: order.files.map((file) => ({
+          originalName: file.originalName,
+          pages: file.pages,
+        })),
+        options: {
+          size: options.size,
+          isColor: options.isColor,
+          isDuplex: options.isDuplex,
+          quantity: options.quantity,
+        },
+        totalPrice: order.totalPrice,
+        pickupDate: formattedPickupDate,
+        pickupTime: pickupTime,
+        comment: comment,
+      })
+      .catch((err) => {
+        console.error('Failed to send order confirmation email:', err);
+        // Don't throw - email failure shouldn't fail order creation
+      });
 
     return {
       ...order,

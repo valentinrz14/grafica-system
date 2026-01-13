@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmación de Pedido</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 30px 20px;
+    }
+    .greeting {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .order-id {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      border-left: 4px solid #667eea;
+    }
+    .order-id strong {
+      color: #667eea;
+    }
+    .section {
+      margin-bottom: 25px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #667eea;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 8px;
+    }
+    .file-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .file-item {
+      background-color: #f8f9fa;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .file-name {
+      font-weight: 500;
+      color: #333;
+    }
+    .file-pages {
+      color: #6c757d;
+      font-size: 14px;
+    }
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+    .option-item {
+      background-color: #f8f9fa;
+      padding: 12px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .option-label {
+      font-size: 12px;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .option-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+    .pickup-info {
+      background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 2px solid #667eea;
+    }
+    .pickup-info .icon {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .pickup-info h3 {
+      margin: 0 0 15px 0;
+      color: #667eea;
+      font-size: 18px;
+    }
+    .pickup-details {
+      display: flex;
+      justify-content: space-around;
+      gap: 15px;
+    }
+    .pickup-detail {
+      flex: 1;
+      text-align: center;
+      background-color: white;
+      padding: 12px;
+      border-radius: 6px;
+    }
+    .pickup-detail-label {
+      font-size: 12px;
+      color: #6c757d;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .pickup-detail-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #667eea;
+    }
+    .total-price {
+      background-color: #667eea;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .total-price .label {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 5px;
+    }
+    .total-price .amount {
+      font-size: 36px;
+      font-weight: 700;
+    }
+    .comment-box {
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .comment-box strong {
+      color: #856404;
+    }
+    .cta-button {
+      display: inline-block;
+      background-color: #667eea;
+      color: white !important;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 6px;
+      font-weight: 600;
+      text-align: center;
+      margin: 20px 0;
+      transition: background-color 0.3s;
+    }
+    .cta-button:hover {
+      background-color: #5568d3;
+    }
+    .footer {
+      background-color: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      color: #6c757d;
+      font-size: 14px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    @media only screen and (max-width: 600px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+      .pickup-details {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>✅ Pedido Confirmado</h1>
+    </div>
+
+    <div class="content">
+      <p class="greeting">Hola <strong>{{userName}}</strong>,</p>
+
+      <div class="order-id">
+        <strong>Pedido:</strong> #{{orderId}}
+      </div>
+
+      <p>Tu pedido ha sido recibido con éxito y está siendo procesado. A continuación encontrarás los detalles de tu orden:</p>
+
+      <!-- Files Section -->
+      <div class="section">
+        <div class="section-title">📄 Archivos</div>
+        <ul class="file-list">
+          {{#each files}}
+          <li class="file-item">
+            <span class="file-name">{{this.originalName}}</span>
+            <span class="file-pages">{{this.pages}} página{{#if (gt this.pages 1)}}s{{/if}}</span>
+          </li>
+          {{/each}}
+        </ul>
+      </div>
+
+      <!-- Options Section -->
+      <div class="section">
+        <div class="section-title">⚙️ Opciones de Impresión</div>
+        <div class="options-grid">
+          <div class="option-item">
+            <div class="option-label">Tamaño</div>
+            <div class="option-value">{{options.size}}</div>
+          </div>
+          <div class="option-item">
+            <div class="option-label">Cantidad</div>
+            <div class="option-value">{{options.quantity}}</div>
+          </div>
+          <div class="option-item">
+            <div class="option-label">Color</div>
+            <div class="option-value">{{#if options.isColor}}A Color{{else}}Blanco y Negro{{/if}}</div>
+          </div>
+          <div class="option-item">
+            <div class="option-label">Impresión</div>
+            <div class="option-value">{{#if options.isDuplex}}Doble Faz{{else}}Simple Faz{{/if}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pickup Information (if available) -->
+      {{#if hasPickupInfo}}
+      <div class="pickup-info">
+        <div class="icon">📅</div>
+        <h3>Información de Retiro</h3>
+        <div class="pickup-details">
+          <div class="pickup-detail">
+            <div class="pickup-detail-label">Fecha</div>
+            <div class="pickup-detail-value">{{pickupDate}}</div>
+          </div>
+          <div class="pickup-detail">
+            <div class="pickup-detail-label">Hora</div>
+            <div class="pickup-detail-value">{{pickupTime}}</div>
+          </div>
+        </div>
+      </div>
+      {{/if}}
+
+      <!-- Comment (if available) -->
+      {{#if comment}}
+      <div class="comment-box">
+        <strong>💬 Comentario:</strong> {{comment}}
+      </div>
+      {{/if}}
+
+      <!-- Total Price -->
+      <div class="total-price">
+        <div class="label">Total Estimado</div>
+        <div class="amount">${{totalPrice}}</div>
+      </div>
+
+      <p style="text-align: center;">
+        <a href="{{frontendUrl}}/orders" class="cta-button">Ver Mis Pedidos</a>
+      </p>
+
+      <p style="font-size: 14px; color: #6c757d; text-align: center;">
+        💡 Los precios son estimados y pueden variar según disponibilidad
+      </p>
+    </div>
+
+    <div class="footer">
+      <p><strong>Gráfica System</strong></p>
+      <p>Lunes a Sábados | 8:00 AM - 5:00 PM</p>
+      <p>¿Necesitas ayuda? Contáctanos respondiendo a este email.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -47,6 +47,8 @@ export default function HomePage() {
     quantity: 1,
   });
   const [comment, setComment] = useState('');
+  const [pickupDate, setPickupDate] = useState('');
+  const [pickupTime, setPickupTime] = useState('');
   const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdown | null>(
     null,
   );
@@ -147,6 +149,8 @@ export default function HomePage() {
         options,
         files: uploadedFiles,
         comment: comment.trim() || undefined,
+        pickupDate: pickupDate ? new Date(pickupDate).toISOString() : undefined,
+        pickupTime: pickupTime || undefined,
       });
       showToast('¡Pedido creado exitosamente!', 'success');
       setOrderSuccess(true);
@@ -155,6 +159,8 @@ export default function HomePage() {
       setTimeout(() => {
         setUploadedFiles([]);
         setComment('');
+        setPickupDate('');
+        setPickupTime('');
         setOptions({
           size: 'A4',
           isColor: false,
@@ -465,6 +471,96 @@ export default function HomePage() {
                     <p className="mt-1 text-xs text-gray-500 text-right">
                       {comment.length}/500 caracteres
                     </p>
+                  </div>
+
+                  {/* Pickup Date and Time */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      📅 Fecha y hora de retiro
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Seleccioná cuándo querés retirar tu pedido (Lunes a
+                      Sábados, 8:00 AM - 5:00 PM)
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Date Picker */}
+                      <div>
+                        <label
+                          htmlFor="pickupDate"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Fecha de retiro
+                        </label>
+                        <input
+                          type="date"
+                          id="pickupDate"
+                          value={pickupDate}
+                          onChange={(e) => {
+                            const selectedDate = new Date(e.target.value);
+                            const dayOfWeek = selectedDate.getDay();
+
+                            // Check if it's Sunday (0)
+                            if (dayOfWeek === 0) {
+                              showToast(
+                                'No se puede seleccionar domingos. Por favor elegí un día de lunes a sábado.',
+                                'warning',
+                              );
+                              return;
+                            }
+
+                            setPickupDate(e.target.value);
+                          }}
+                          min={
+                            new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+                              .toISOString()
+                              .split('T')[0]
+                          }
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                          style={{
+                            fontSize: '16px',
+                            height: '52px',
+                          }}
+                        />
+                      </div>
+
+                      {/* Time Picker */}
+                      <div>
+                        <label
+                          htmlFor="pickupTime"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Hora de retiro
+                        </label>
+                        <input
+                          type="time"
+                          id="pickupTime"
+                          value={pickupTime}
+                          onChange={(e) => {
+                            const time = e.target.value;
+                            const [hours] = time.split(':').map(Number);
+
+                            // Check if time is between 08:00 and 17:00
+                            if (hours < 8 || hours >= 17) {
+                              showToast(
+                                'La hora debe ser entre 08:00 y 17:00',
+                                'warning',
+                              );
+                              return;
+                            }
+
+                            setPickupTime(time);
+                          }}
+                          min="08:00"
+                          max="17:00"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                          style={{
+                            fontSize: '16px',
+                            height: '52px',
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <button

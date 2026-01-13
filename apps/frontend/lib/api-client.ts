@@ -33,6 +33,8 @@ export interface Order {
   options: OrderOptions;
   files: UploadedFile[];
   comment?: string;
+  pickupDate?: string;
+  pickupTime?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,6 +44,8 @@ export interface CreateOrderDto {
   options: OrderOptions;
   files: UploadedFile[];
   comment?: string;
+  pickupDate?: string;
+  pickupTime?: string;
 }
 
 class ApiClient {
