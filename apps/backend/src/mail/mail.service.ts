@@ -30,6 +30,22 @@ export class MailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
+    // Check if email credentials are configured
+    const isConfigured =
+      process.env.GMAIL_USER &&
+      process.env.GMAIL_APP_PASSWORD &&
+      process.env.GMAIL_USER !== 'test@gmail.com' &&
+      process.env.GMAIL_APP_PASSWORD !== 'test-password-placeholder';
+
+    if (!isConfigured) {
+      this.logger.warn(
+        '⚠️  Email not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD in .env to enable email notifications.',
+      );
+      this.logger.warn(
+        '   Orders will be created successfully, but confirmation emails will not be sent.',
+      );
+    }
+
     // Configure Gmail SMTP transporter
     this.transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
@@ -41,18 +57,40 @@ export class MailService {
       },
     });
 
-    // Verify connection configuration
-    this.transporter.verify((error) => {
-      if (error) {
-        this.logger.error('Error configuring email transporter:', error);
-      } else {
-        this.logger.log('Email transporter configured successfully');
-      }
-    });
+    // Verify connection configuration (only if credentials are set)
+    if (isConfigured) {
+      this.transporter.verify((error) => {
+        if (error) {
+          this.logger.error(
+            '❌ Error configuring email transporter:',
+            error.message,
+          );
+          this.logger.warn(
+            '   Orders will be created, but emails will not be sent.',
+          );
+        } else {
+          this.logger.log('✅ Email transporter configured successfully');
+        }
+      });
+    }
   }
 
   async sendOrderConfirmation(orderData: OrderEmailData): Promise<void> {
     try {
+      // Check if email is configured
+      const isConfigured =
+        process.env.GMAIL_USER &&
+        process.env.GMAIL_APP_PASSWORD &&
+        process.env.GMAIL_USER !== 'test@gmail.com' &&
+        process.env.GMAIL_APP_PASSWORD !== 'test-password-placeholder';
+
+      if (!isConfigured) {
+        this.logger.log(
+          `Order ${orderData.orderId} created. Email not sent (credentials not configured).`,
+        );
+        return;
+      }
+
       // Read and compile the email template
       const templatePath = path.join(
         __dirname,
