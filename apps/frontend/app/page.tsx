@@ -480,7 +480,7 @@ export default function HomePage() {
                     </h3>
                     <p className="text-sm text-gray-600 mb-4">
                       Seleccioná cuándo querés retirar tu pedido (Lunes a
-                      Sábados, 8:00 AM - 5:00 PM)
+                      Sábados, 8:00 AM - 7:00 PM)
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -540,10 +540,10 @@ export default function HomePage() {
                             const time = e.target.value;
                             const [hours] = time.split(':').map(Number);
 
-                            // Check if time is between 08:00 and 17:00
-                            if (hours < 8 || hours >= 17) {
+                            // Check if time is between 08:00 and 19:00 (7 PM)
+                            if (hours < 8 || hours >= 19) {
                               showToast(
-                                'La hora debe ser entre 08:00 y 17:00',
+                                'La hora debe ser entre 08:00 y 19:00 (7 PM)',
                                 'warning',
                               );
                               return;
@@ -552,7 +552,7 @@ export default function HomePage() {
                             setPickupTime(time);
                           }}
                           min="08:00"
-                          max="17:00"
+                          max="19:00"
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                           style={{
                             fontSize: '16px',

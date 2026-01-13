@@ -65,10 +65,10 @@ function IsBusinessHours(validationOptions?: ValidationOptions) {
 
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           const [hours] = value.split(':').map(Number);
-          return hours >= 8 && hours < 17;
+          return hours >= 8 && hours < 19; // 8 AM to 7 PM (19:00)
         },
         defaultMessage() {
-          return 'La hora de retiro debe ser entre 08:00 y 17:00 en formato HH:mm';
+          return 'La hora de retiro debe ser entre 08:00 y 19:00 (7 PM) en formato HH:mm';
         },
       },
     });
