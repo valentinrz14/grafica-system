@@ -30,7 +30,7 @@ export function PriceCalculator({
           <select
             value={options.size}
             onChange={(e) => handleChange('size', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
           >
             <option value="A4">A4 (21 x 29.7 cm)</option>
             <option value="A3">A3 (29.7 x 42 cm)</option>
@@ -51,7 +51,7 @@ export function PriceCalculator({
             onChange={(e) =>
               handleChange('quantity', parseInt(e.target.value) || 1)
             }
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
           />
         </div>
       </div>
@@ -68,18 +68,20 @@ export function PriceCalculator({
                 type="radio"
                 checked={!options.isColor}
                 onChange={() => handleChange('isColor', false)}
-                className="mr-2"
+                className="mr-2 w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-sm">Blanco y Negro</span>
+              <span className="text-sm font-medium text-gray-900">
+                Blanco y Negro
+              </span>
             </label>
             <label className="flex items-center cursor-pointer">
               <input
                 type="radio"
                 checked={options.isColor}
                 onChange={() => handleChange('isColor', true)}
-                className="mr-2"
+                className="mr-2 w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-sm">Color</span>
+              <span className="text-sm font-medium text-gray-900">Color</span>
             </label>
           </div>
         </div>
@@ -95,18 +97,22 @@ export function PriceCalculator({
                 type="radio"
                 checked={!options.isDuplex}
                 onChange={() => handleChange('isDuplex', false)}
-                className="mr-2"
+                className="mr-2 w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-sm">Simple faz</span>
+              <span className="text-sm font-medium text-gray-900">
+                Simple faz
+              </span>
             </label>
             <label className="flex items-center cursor-pointer">
               <input
                 type="radio"
                 checked={options.isDuplex}
                 onChange={() => handleChange('isDuplex', true)}
-                className="mr-2"
+                className="mr-2 w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-sm">Doble faz</span>
+              <span className="text-sm font-medium text-gray-900">
+                Doble faz
+              </span>
             </label>
           </div>
         </div>

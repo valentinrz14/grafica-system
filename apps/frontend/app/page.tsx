@@ -3,7 +3,12 @@
 import { useState, useEffect } from 'react';
 import { UploadForm } from '@/components/upload-form';
 import { PriceCalculator } from '@/components/price-calculator';
-import { apiClient, OrderOptions, UploadedFile, PriceBreakdown } from '@/lib/api-client';
+import {
+  apiClient,
+  OrderOptions,
+  UploadedFile,
+  PriceBreakdown,
+} from '@/lib/api-client';
 import { CheckCircle, Printer } from 'lucide-react';
 
 export default function HomePage() {
@@ -17,7 +22,9 @@ export default function HomePage() {
     isDuplex: false,
     quantity: 1,
   });
-  const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdown | null>(null);
+  const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdown | null>(
+    null,
+  );
   const [isCalculating, setIsCalculating] = useState(false);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
@@ -57,10 +64,17 @@ export default function HomePage() {
 
       setIsCalculating(true);
       try {
-        const breakdown = await apiClient.calculatePrice(uploadedFiles, options);
+        const breakdown = await apiClient.calculatePrice(
+          uploadedFiles,
+          options,
+        );
         setPriceBreakdown(breakdown);
       } catch (error) {
         console.error('Error calculating price:', error);
+        setPriceBreakdown(null);
+        alert(
+          'Error al calcular el precio. Por favor intentá de nuevo o contactá a soporte.',
+        );
       } finally {
         setIsCalculating(false);
       }
@@ -122,7 +136,8 @@ export default function HomePage() {
             ¡Pedido enviado!
           </h1>
           <p className="text-gray-600 mb-6">
-            Tu pedido fue recibido correctamente. Te contactaremos a la brevedad al email proporcionado.
+            Tu pedido fue recibido correctamente. Te contactaremos a la brevedad
+            al email proporcionado.
           </p>
           <p className="text-sm text-gray-500">
             Redirigiendo en unos segundos...
@@ -144,7 +159,8 @@ export default function HomePage() {
             </h1>
           </div>
           <p className="mt-2 text-gray-600">
-            Subí tus archivos, elegí las opciones y obtené tu presupuesto al instante
+            Subí tus archivos, elegí las opciones y obtené tu presupuesto al
+            instante
           </p>
         </div>
       </header>
@@ -181,7 +197,8 @@ export default function HomePage() {
                             {file.originalName}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {file.pages} {file.pages === 1 ? 'página' : 'páginas'}
+                            {file.pages}{' '}
+                            {file.pages === 1 ? 'página' : 'páginas'}
                           </p>
                         </div>
                         <button
@@ -239,7 +256,8 @@ export default function HomePage() {
                     {isCreatingOrder ? 'Enviando...' : 'Enviar pedido'}
                   </button>
                   <p className="text-xs text-gray-500 text-center">
-                    Al enviar el pedido, recibirás un email de confirmación con los detalles
+                    Al enviar el pedido, recibirás un email de confirmación con
+                    los detalles
                   </p>
                 </div>
               </div>
