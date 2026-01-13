@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  role         String   @default("ADMIN")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Order {
+  id         String      @id @default(cuid())
+  userEmail  String      @map("user_email")
+  status     OrderStatus @default(PENDING)
+  totalPrice Float       @map("total_price")
+  options    Json        // { size, isColor, isDuplex, quantity }
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  files OrderFile[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderFile {
+  id           String   @id @default(cuid())
+  orderId      String   @map("order_id")
+  fileUrl      String   @map("file_url")
+  fileName     String   @map("file_name")
+  originalName String   @map("original_name")
+  pages        Int      @default(1)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_files")
+}
+
+model PricingConfig {
+  id               String   @id @default(cuid())
+  basePrice        Float    @map("base_price")
+  colorMultiplier  Float    @map("color_multiplier")
+  duplexMultiplier Float    @map("duplex_multiplier")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("pricing_config")
+}
+
+enum OrderStatus {
+  PENDING
+  PRINTING
+  DONE
+}
