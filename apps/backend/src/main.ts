@@ -1,9 +1,17 @@
+import { config } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
+
+// Load environment variables before bootstrapping
+config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Security headers with helmet
+  app.use(helmet());
 
   // Enable CORS for frontend
   app.enableCors({
@@ -24,4 +32,4 @@ async function bootstrap() {
 
   console.log(`🚀 Backend running on http://localhost:${port}`);
 }
-bootstrap();
+void bootstrap();

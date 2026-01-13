@@ -32,6 +32,7 @@ export interface Order {
   totalPrice: number;
   options: OrderOptions;
   files: UploadedFile[];
+  comment?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -40,6 +41,7 @@ export interface CreateOrderDto {
   userEmail: string;
   options: OrderOptions;
   files: UploadedFile[];
+  comment?: string;
 }
 
 class ApiClient {
@@ -47,6 +49,21 @@ class ApiClient {
 
   constructor() {
     this.baseUrl = API_URL;
+  }
+
+  private getAuthHeaders(): HeadersInit {
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return headers;
   }
 
   async uploadFile(file: File): Promise<UploadedFile> {
@@ -94,9 +111,7 @@ class ApiClient {
   async createOrder(orderData: CreateOrderDto): Promise<Order> {
     const response = await fetch(`${this.baseUrl}/orders`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: this.getAuthHeaders(),
       body: JSON.stringify(orderData),
     });
 
@@ -110,15 +125,31 @@ class ApiClient {
   }
 
   async getOrders(): Promise<Order[]> {
-    const response = await fetch(`${this.baseUrl}/orders`, {
-      headers: {
-        'X-Admin': 'true', // Mock admin authentication
-      },
+    const url = `${this.baseUrl}/orders`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders(),
     });
 
     if (!response.ok) {
       const error = await response.json();
+      console.error('🔴 getOrders: Error response:', error);
       throw new Error(error.message || 'Failed to fetch orders');
+    }
+
+    const result = await response.json();
+    return result.data;
+  }
+
+  async getMyOrders(): Promise<Order[]> {
+    const url = `${this.baseUrl}/orders/my-orders`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('🔴 getMyOrders: Error response:', error);
+      throw new Error(error.message || 'Failed to fetch your orders');
     }
 
     const result = await response.json();
@@ -127,9 +158,7 @@ class ApiClient {
 
   async getOrder(id: string): Promise<Order> {
     const response = await fetch(`${this.baseUrl}/orders/${id}`, {
-      headers: {
-        'X-Admin': 'true', // Mock admin authentication
-      },
+      headers: this.getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -147,10 +176,7 @@ class ApiClient {
   ): Promise<Order> {
     const response = await fetch(`${this.baseUrl}/orders/${id}/status`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Admin': 'true', // Mock admin authentication
-      },
+      headers: this.getAuthHeaders(),
       body: JSON.stringify({ status }),
     });
 

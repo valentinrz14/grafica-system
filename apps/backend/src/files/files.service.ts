@@ -6,8 +6,8 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import * as fs from 'fs';
 import * as path from 'path';
-const pdfParse = require('pdf-parse');
 import { randomUUID } from 'crypto';
+import pdfParse from 'pdf-parse';
 
 export interface UploadFileResult {
   id: string;
@@ -26,7 +26,7 @@ export class FilesService {
     'image/jpg',
     'image/png',
   ];
-  private readonly maxFileSize = 10 * 1024 * 1024; // 10 MB
+  private readonly maxFileSize = 10 * 1024 * 1024;
 
   constructor(private prisma: PrismaService) {
     this.uploadDir =
@@ -39,18 +39,14 @@ export class FilesService {
   }
 
   async uploadFile(file: Express.Multer.File): Promise<UploadFileResult> {
-    // Validate file
     this.validateFile(file);
 
-    // Generate unique filename
     const fileExtension = path.extname(file.originalname);
     const fileName = `${randomUUID()}${fileExtension}`;
     const filePath = path.join(this.uploadDir, fileName);
 
-    // Save file to disk
     fs.writeFileSync(filePath, file.buffer);
 
-    // Count pages
     const pages = await this.countPages(file);
 
     const fileUrl = `/files/${fileName}`;
@@ -58,6 +54,7 @@ export class FilesService {
     return {
       id: randomUUID(),
       fileName,
+
       originalName: file.originalname,
       fileUrl,
       pages,
@@ -76,9 +73,7 @@ export class FilesService {
     }
 
     if (file.size > this.maxFileSize) {
-      throw new BadRequestException(
-        'File size exceeds 10 MB limit',
-      );
+      throw new BadRequestException('File size exceeds 10 MB limit');
     }
   }
 
@@ -87,12 +82,11 @@ export class FilesService {
       try {
         const data = await pdfParse(file.buffer);
         return data.numpages;
-      } catch (error) {
+      } catch {
         throw new BadRequestException('Failed to parse PDF file');
       }
     }
 
-    // Images count as 1 page
     return 1;
   }
 

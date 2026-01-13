@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
@@ -8,19 +13,49 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
+  private readonly logger = new Logger(PrismaService.name);
+
   constructor() {
     const connectionString = process.env.DATABASE_URL;
-    const pool = new Pool({ connectionString });
+
+    if (!connectionString) {
+      throw new Error(
+        'DATABASE_URL is not defined. Please check your .env file.',
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const pool = new Pool({
+      connectionString,
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    pool.on('error', (err: Error) => {
+      console.error('PostgreSQL pool error:', err);
+    });
+
     const adapter = new PrismaPg(pool);
 
     super({ adapter });
+
+    this.logger.log('PrismaService initialized with PostgreSQL adapter');
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+      this.logger.log('Database connection established successfully');
+    } catch (error) {
+      this.logger.error('Failed to connect to database:', error);
+      throw error;
+    }
   }
 
   async onModuleDestroy() {
     await this.$disconnect();
+    this.logger.log('Database connection closed');
   }
 }

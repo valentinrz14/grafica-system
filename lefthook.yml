@@ -1,13 +1,23 @@
 # Lefthook configuration
 # https://github.com/evilmartians/lefthook
 
-# Pre-commit hook: ejecuta linting y formateo antes de cada commit
+# Pre-commit hook: ejecuta linting, formateo y type checking antes de cada commit
 pre-commit:
   parallel: true
   commands:
+    # TypeScript type checking backend
+    typecheck-backend:
+      glob: 'apps/backend/src/**/*.ts'
+      run: cd apps/backend && npx tsc --noEmit --skipLibCheck
+
+    # TypeScript type checking frontend
+    typecheck-frontend:
+      glob: 'apps/frontend/**/*.{ts,tsx}'
+      run: cd apps/frontend && npx tsc --noEmit --skipLibCheck
+
     # Lint backend
     lint-backend:
-      glob: 'apps/backend/**/*.{ts,js}'
+      glob: 'apps/backend/src/**/*.{ts,js}'
       run: cd apps/backend && npm run lint
       stage_fixed: true
 

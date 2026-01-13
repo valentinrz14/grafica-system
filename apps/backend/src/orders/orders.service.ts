@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PricingService } from '../pricing/pricing.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -12,12 +13,10 @@ export class OrdersService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
-    const { userEmail, options, files } = createOrderDto;
+    const { userEmail, options, files, comment } = createOrderDto;
 
-    // Calculate total pages from all files
     const totalPages = files.reduce((sum, file) => sum + file.pages, 0);
 
-    // Calculate price
     const priceBreakdown = await this.pricingService.calculatePrice({
       pages: totalPages,
       isColor: options.isColor,
@@ -25,13 +24,13 @@ export class OrdersService {
       quantity: options.quantity,
     });
 
-    // Create order with files
     const order = await this.prisma.order.create({
       data: {
         userEmail,
         status: 'PENDING',
         totalPrice: priceBreakdown.total,
-        options: options as any,
+        options: options as unknown as Prisma.JsonObject,
+        comment: comment || null,
         files: {
           create: files.map((file) => ({
             fileUrl: file.fileUrl,
@@ -65,6 +64,22 @@ export class OrdersService {
     return orders;
   }
 
+  async findByUserEmail(email: string) {
+    const orders = await this.prisma.order.findMany({
+      where: {
+        userEmail: email,
+      },
+      include: {
+        files: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return orders;
+  }
+
   async findOne(id: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },
@@ -81,7 +96,7 @@ export class OrdersService {
   }
 
   async updateStatus(id: string, updateOrderStatusDto: UpdateOrderStatusDto) {
-    const order = await this.findOne(id);
+    await this.findOne(id);
 
     const updatedOrder = await this.prisma.order.update({
       where: { id },
@@ -96,7 +111,10 @@ export class OrdersService {
     return updatedOrder;
   }
 
-  async calculatePrice(files: { pages: number }[], options: any) {
+  async calculatePrice(
+    files: { pages: number }[],
+    options: { isColor: boolean; isDuplex: boolean; quantity: number },
+  ) {
     const totalPages = files.reduce((sum, file) => sum + file.pages, 0);
 
     const priceBreakdown = await this.pricingService.calculatePrice({

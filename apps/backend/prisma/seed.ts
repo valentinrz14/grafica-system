@@ -1,6 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import * as bcrypt from 'bcryptjs';
 import 'dotenv/config';
 
 const connectionString = process.env.DATABASE_URL;
@@ -12,17 +13,24 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Create admin user (mock)
+  // Contraseña hasheada para admin (password: Admin123!)
+  const adminPasswordHash = await bcrypt.hash('Admin123!', 12);
+
+  // Create admin user
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@grafica.com' },
-    update: {},
+    update: {
+      passwordHash: adminPasswordHash,
+      role: UserRole.ADMIN,
+    },
     create: {
       email: 'admin@grafica.com',
-      passwordHash: null, // No password for mock auth
-      role: 'ADMIN',
+      passwordHash: adminPasswordHash,
+      role: UserRole.ADMIN,
     },
   });
-  console.log('✅ Admin user created:', adminUser.email);
+  console.log('✅ Admin user created/updated:', adminUser.email);
+  console.log('   Password: Admin123!');
 
   // Create default pricing config
   const pricingConfig = await prisma.pricingConfig.upsert({
@@ -36,7 +44,6 @@ async function main() {
     },
   });
   console.log('✅ Pricing config created:', pricingConfig);
-
   console.log('🎉 Seeding completed!');
 }
 

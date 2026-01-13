@@ -11,6 +11,9 @@ import {
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { Public } from '../auth/decorators/public.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { User } from '@prisma/client';
 
 @Controller('orders')
 export class OrdersController {
@@ -18,9 +21,15 @@ export class OrdersController {
 
   @Post()
   async create(
-    @Body(new ValidationPipe({ transform: true })) createOrderDto: CreateOrderDto,
+    @CurrentUser() user: User & { email: string },
+    @Body(new ValidationPipe({ transform: true }))
+    createOrderDto: CreateOrderDto,
   ) {
-    const order = await this.ordersService.create(createOrderDto);
+    const orderData = {
+      ...createOrderDto,
+      userEmail: user.email,
+    };
+    const order = await this.ordersService.create(orderData);
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Order created successfully',
@@ -28,9 +37,9 @@ export class OrdersController {
     };
   }
 
-  @Get()
-  async findAll() {
-    const orders = await this.ordersService.findAll();
+  @Get('my-orders')
+  async findMyOrders(@CurrentUser() user: User & { email: string }) {
+    const orders = await this.ordersService.findByUserEmail(user.email);
     return {
       statusCode: HttpStatus.OK,
       data: orders,
@@ -43,6 +52,15 @@ export class OrdersController {
     return {
       statusCode: HttpStatus.OK,
       data: order,
+    };
+  }
+
+  @Get()
+  async findAll() {
+    const orders = await this.ordersService.findAll();
+    return {
+      statusCode: HttpStatus.OK,
+      data: orders,
     };
   }
 
@@ -62,10 +80,14 @@ export class OrdersController {
     };
   }
 
+  @Public()
   @Post('calculate-price')
   async calculatePrice(
     @Body(new ValidationPipe())
-    body: { files: { pages: number }[]; options: any },
+    body: {
+      files: { pages: number }[];
+      options: { isColor: boolean; isDuplex: boolean; quantity: number };
+    },
   ) {
     const priceBreakdown = await this.ordersService.calculatePrice(
       body.files,

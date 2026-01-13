@@ -13,26 +13,32 @@ model User {
   id           String   @id @default(cuid())
   email        String   @unique
   passwordHash String?  @map("password_hash")
-  role         String   @default("ADMIN")
+  role         UserRole @default(USER)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+
+  orders Order[]
 
   @@map("users")
 }
 
 model Order {
   id         String      @id @default(cuid())
-  userEmail  String      @map("user_email")
+  userId     String?     @map("user_id")
+  userEmail  String?     @map("user_email")
   status     OrderStatus @default(PENDING)
   totalPrice Float       @map("total_price")
   options    Json        // { size, isColor, isDuplex, quantity }
+  comment    String?     // Comentario opcional del cliente
   createdAt  DateTime    @default(now()) @map("created_at")
   updatedAt  DateTime    @updatedAt @map("updated_at")
 
   files OrderFile[]
+  user  User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@index([createdAt])
+  @@index([userId])
   @@map("orders")
 }
 
@@ -66,4 +72,9 @@ enum OrderStatus {
   PENDING
   PRINTING
   DONE
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }

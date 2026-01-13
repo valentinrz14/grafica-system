@@ -25,3 +25,76 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Toast Animations */
+@keyframes toast-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-toast-in {
+  animation: toast-in 0.3s ease-out;
+}
+
+.animate-toast-out {
+  animation: toast-out 0.3s ease-in;
+}
+
+/* Price Breakdown Slide In Animation */
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Subtle Fade In Animation for Login */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Subtle Scale Fade for buttons and inputs on focus/hover */
+@keyframes subtleScale {
+  from {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
