@@ -29,14 +29,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
-    const authHeader = request.headers.authorization;
-
-    if (authHeader) {
-      console.log(
-        `JWT Guard: Token starts with: ${authHeader.substring(0, 20)}...`,
-      );
-    }
-
     return super.canActivate(context);
   }
 

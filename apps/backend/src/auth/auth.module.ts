@@ -16,15 +16,6 @@ import { PrismaModule } from '../prisma/prisma.module';
       useFactory: (): JwtModuleOptions => {
         const secret = process.env.JWT_SECRET || 'change-me-in-production';
         const expiresIn = process.env.JWT_EXPIRATION || '8h';
-        console.log(
-          '🔑 JwtModule: Configuring with secret length:',
-          secret.length,
-        );
-        console.log(
-          '🔑 JwtModule: Secret preview:',
-          secret.substring(0, 10) + '...',
-        );
-        console.log('🔑 JwtModule: Token expiration:', expiresIn);
         return {
           secret,
           signOptions: {

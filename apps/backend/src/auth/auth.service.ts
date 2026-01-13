@@ -215,19 +215,6 @@ export class AuthService {
       firstName: user.firstName ?? undefined,
       profileComplete: user.profileComplete ?? false,
     };
-    const token = this.jwtService.sign(payload);
-    console.log(
-      'Generated token for user:',
-      user.email,
-      'Token length:',
-      token.length,
-    );
-    console.log(
-      'JWT_SECRET present:',
-      !!process.env.JWT_SECRET,
-      'Length:',
-      process.env.JWT_SECRET?.length,
-    );
-    return token;
+    return this.jwtService.sign(payload);
   }
 }
