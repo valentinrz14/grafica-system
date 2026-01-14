@@ -10,6 +10,9 @@ import { OrdersModule } from './orders/orders.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
+import { PromotionsModule } from './promotions/promotions.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
@@ -27,6 +30,9 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     FilesModule,
     OrdersModule,
     SchedulerModule,
+    CategoriesModule,
+    ProductsModule,
+    PromotionsModule,
   ],
   controllers: [AppController],
   providers: [

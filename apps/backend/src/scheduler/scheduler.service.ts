@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { OrderStatus } from '@prisma/client';
 import * as fs from 'fs/promises';
@@ -47,16 +47,12 @@ export class SchedulerService {
       for (const file of oldFiles) {
         try {
           // Borrar archivo físico del filesystem
-          const uploadsDir = path.join(
-            process.cwd(),
-            'uploads',
-            file.fileName,
-          );
+          const uploadsDir = path.join(process.cwd(), 'uploads', file.fileName);
 
           try {
             await fs.unlink(uploadsDir);
             this.logger.log(`Archivo borrado: ${file.fileName}`);
-          } catch (fsError) {
+          } catch {
             // Si el archivo no existe en el filesystem, continuar
             this.logger.warn(
               `Archivo no encontrado en filesystem: ${file.fileName}`,
