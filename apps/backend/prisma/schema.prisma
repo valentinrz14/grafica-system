@@ -169,7 +169,12 @@ model OrderItem {
 model Promotion {
   id            String        @id @default(cuid())
   name          String
+  title         String?       // Display title (if different from name)
+  subtitle      String?       // Subtitle for display
   description   String?
+  imageUrl      String?       @map("image_url") // Promotion banner image
+  badgeText     String?       @map("badge_text") // Badge text (e.g., "HOT", "NEW")
+  badgeColor    String?       @map("badge_color") // Badge color (hex)
   type          PromotionType
   discountValue Float         @map("discount_value")
   startDate     DateTime      @map("start_date")
