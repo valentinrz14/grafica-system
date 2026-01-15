@@ -214,17 +214,6 @@ class ApiClient {
     return this.handleResponse(response);
   }
 
-  async getPromotionStatistics(): Promise<any> {
-    const response = await fetch(
-      `${this.baseUrl}/admin/promotions/statistics`,
-      {
-        headers: this.getAuthHeaders(),
-      },
-    );
-
-    return this.handleResponse(response);
-  }
-
   async createPromotion(data: any): Promise<any> {
     const response = await fetch(`${this.baseUrl}/admin/promotions`, {
       method: 'POST',

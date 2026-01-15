@@ -61,11 +61,3 @@ export interface CreatePromotionDto {
 }
 
 export interface UpdatePromotionDto extends Partial<CreatePromotionDto> {}
-
-export interface PromotionStatistics {
-  total: number;
-  active: number;
-  scheduled: number;
-  expired: number;
-  paused: number;
-}

@@ -36,12 +36,6 @@ export class UsersService {
     });
   }
 
-  async findByGoogleId(googleId: string) {
-    return await this.prisma.user.findUnique({
-      where: { googleId },
-    });
-  }
-
   async findById(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -102,38 +96,5 @@ export class UsersService {
     });
 
     return user;
-  }
-
-  async checkProfileComplete(userId: string): Promise<boolean> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        firstName: true,
-        lastName: true,
-        phoneNumber: true,
-      },
-    });
-
-    if (!user) {
-      return false;
-    }
-
-    return !!(user.firstName && user.lastName && user.phoneNumber);
-  }
-
-  async linkGoogleAccount(
-    email: string,
-    googleId: string,
-    profileData: { firstName?: string; lastName?: string },
-  ) {
-    return await this.prisma.user.update({
-      where: { email },
-      data: {
-        googleId,
-        oauthProvider: 'google',
-        firstName: profileData.firstName,
-        lastName: profileData.lastName,
-      },
-    });
   }
 }

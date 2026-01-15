@@ -4,16 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Home, ChevronRight } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
-import type { Promotion, PromotionStatistics } from '@/types/promotion';
+import type { Promotion } from '@/types/promotion';
 import { PromotionStatus } from '@/types/promotion';
 import { AuthGuard } from '@/components/auth-guard';
 
 export default function AdminPromotionsPage() {
   const router = useRouter();
   const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [statistics, setStatistics] = useState<PromotionStatistics | null>(
-    null,
-  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<PromotionStatus | 'all'>(
@@ -28,12 +25,8 @@ export default function AdminPromotionsPage() {
     try {
       setLoading(true);
       setError(null);
-      const [promotionsData, statsData] = await Promise.all([
-        apiClient.getAllPromotions(),
-        apiClient.getPromotionStatistics(),
-      ]);
+      const promotionsData = await apiClient.getAllPromotions();
       setPromotions(promotionsData);
-      setStatistics(statsData);
     } catch (err: any) {
       console.error('Error loading promotions:', err);
       setError(err.message || 'Failed to load promotions');
@@ -187,52 +180,6 @@ export default function AdminPromotionsPage() {
                 </button>
               </div>
             </div>
-
-            {/* Statistics Cards */}
-            {statistics && (
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="text-gray-600 text-sm font-medium mb-1">
-                    Total
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900">
-                    {statistics.total}
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="text-green-600 text-sm font-medium mb-1">
-                    Active
-                  </div>
-                  <div className="text-3xl font-bold text-green-700">
-                    {statistics.active}
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="text-blue-600 text-sm font-medium mb-1">
-                    Scheduled
-                  </div>
-                  <div className="text-3xl font-bold text-blue-700">
-                    {statistics.scheduled}
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="text-gray-600 text-sm font-medium mb-1">
-                    Expired
-                  </div>
-                  <div className="text-3xl font-bold text-gray-700">
-                    {statistics.expired}
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="text-yellow-600 text-sm font-medium mb-1">
-                    Paused
-                  </div>
-                  <div className="text-3xl font-bold text-yellow-700">
-                    {statistics.paused}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Filters */}
             <div className="bg-white rounded-lg shadow p-4 mb-6">

@@ -12,13 +12,6 @@ import { RegisterDto } from './dto/register.dto';
 import { CompleteProfileDto } from './dto/complete-profile.dto';
 import { JwtPayload } from './dto/jwt-payload.interface';
 
-interface GoogleProfile {
-  googleId: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-}
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -115,87 +108,6 @@ export class AuthService {
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
         profileComplete: user.profileComplete,
-      },
-      token,
-    };
-  }
-
-  async registerOrLoginWithGoogle(googleProfile: GoogleProfile) {
-    // Try to find user by Google ID first
-    const existingGoogleUser = await this.usersService.findByGoogleId(
-      googleProfile.googleId,
-    );
-
-    if (existingGoogleUser) {
-      // User exists with this Google ID, return login
-      const token = this.generateToken(existingGoogleUser);
-      return {
-        user: {
-          id: existingGoogleUser.id,
-          email: existingGoogleUser.email,
-          role: existingGoogleUser.role,
-          firstName: existingGoogleUser.firstName,
-          lastName: existingGoogleUser.lastName,
-          phoneNumber: existingGoogleUser.phoneNumber,
-          profileComplete: existingGoogleUser.profileComplete,
-        },
-        token,
-      };
-    }
-
-    // Try to find user by email (existing account, link Google)
-    const existingEmailUser = await this.usersService.findByEmail(
-      googleProfile.email,
-    );
-
-    if (existingEmailUser) {
-      // Link Google account to existing user
-      const linkedUser = await this.usersService.linkGoogleAccount(
-        googleProfile.email,
-        googleProfile.googleId,
-        {
-          firstName: googleProfile.firstName,
-          lastName: googleProfile.lastName,
-        },
-      );
-
-      const token = this.generateToken(linkedUser);
-      return {
-        user: {
-          id: linkedUser.id,
-          email: linkedUser.email,
-          role: linkedUser.role,
-          firstName: linkedUser.firstName,
-          lastName: linkedUser.lastName,
-          phoneNumber: linkedUser.phoneNumber,
-          profileComplete: linkedUser.profileComplete,
-        },
-        token,
-      };
-    }
-
-    // Create new user with Google OAuth
-    const newUser = await this.usersService.create({
-      email: googleProfile.email,
-      role: UserRole.USER,
-      googleId: googleProfile.googleId,
-      oauthProvider: 'google',
-      firstName: googleProfile.firstName,
-      lastName: googleProfile.lastName,
-      profileComplete: false, // Need to complete phone number
-    });
-
-    const token = this.generateToken(newUser);
-
-    return {
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-        role: newUser.role,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        phoneNumber: newUser.phoneNumber,
-        profileComplete: newUser.profileComplete,
       },
       token,
     };

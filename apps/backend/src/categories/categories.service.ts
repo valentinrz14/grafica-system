@@ -64,20 +64,4 @@ export class CategoriesService {
       },
     });
   }
-
-  /**
-   * Get category by ID (for admin)
-   */
-  async findById(id: string) {
-    return this.prisma.category.findUnique({
-      where: { id },
-      include: {
-        products: {
-          orderBy: {
-            sortOrder: 'asc',
-          },
-        },
-      },
-    });
-  }
 }

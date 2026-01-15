@@ -130,13 +130,4 @@ export class SchedulerService {
       this.logger.error(`Error al expirar pedidos: ${error}`);
     }
   }
-
-  /**
-   * Método manual para ejecutar limpieza (útil para testing)
-   */
-  async manualCleanup() {
-    this.logger.log('Ejecutando limpieza manual...');
-    await this.cleanupOldFiles();
-    await this.expireOldOrders();
-  }
 }
