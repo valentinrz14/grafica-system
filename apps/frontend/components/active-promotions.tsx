@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Tag, Clock, TrendingUp, Sparkles } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
-import { CompactCountdownTimer } from './countdown-timer';
+import { CompactCountdownTimer } from './CountdownTimer/CountdownTimer.component';
 
 interface Promotion {
   id: string;

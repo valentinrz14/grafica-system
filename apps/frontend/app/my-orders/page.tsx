@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { OrderCard } from '@/components/order-card';
 import { Package } from 'lucide-react';
 import Link from 'next/link';
-import { useToast } from '@/context/toast-context';
-import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/context/ToastContext/ToastContext.context';
+import { useAuth } from '@/context/AuthContext/AuthContext.context';
 import { AuthGuard } from '@/components/auth-guard';
 import { MobileMenu } from '@/components/mobile-menu';
 import { PageHeader } from '@/components/PageHeader/PageHeader.component';
-import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner.component';
+import { LoadingSpinner } from '@/design-system/components/LoadingSpinner/LoadingSpinner.component';
 import { EmptyState } from '@/components/EmptyState/EmptyState.component';
 import { useMyOrders } from '@/lib/hooks/use-orders';
 

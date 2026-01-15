@@ -12,12 +12,12 @@ import {
   TrendingUp,
   BarChart3,
 } from 'lucide-react';
-import { useToast } from '@/context/toast-context';
-import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/context/ToastContext/ToastContext.context';
+import { useAuth } from '@/context/AuthContext/AuthContext.context';
 import { AuthGuard } from '@/components/auth-guard';
 import { MobileMenu } from '@/components/mobile-menu';
 import { PageHeader } from '@/components/PageHeader/PageHeader.component';
-import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner.component';
+import { LoadingSpinner } from '@/design-system/components/LoadingSpinner/LoadingSpinner.component';
 import { useOrders } from '@/lib/hooks/use-orders';
 
 export default function AdminPage() {

@@ -1,8 +1,9 @@
 import React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+import { BadgeProps } from './Badge.interfaces';
 
-const badgeVariants = cva(
+export const badgeVariants = cva(
   // Base styles
   'inline-flex items-center justify-center rounded-full font-medium transition-all',
   {
@@ -30,16 +31,6 @@ const badgeVariants = cva(
     },
   },
 );
-
-export interface BadgeProps
-  extends
-    React.HTMLAttributes<HTMLSpanElement>,
-    VariantProps<typeof badgeVariants> {
-  children: React.ReactNode;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  dot?: boolean;
-}
 
 export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
   (

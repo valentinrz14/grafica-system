@@ -1,24 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
-interface CountdownTimerProps {
-  endDate: string;
-  onExpire?: () => void;
-  className?: string;
-  showDays?: boolean;
-  showHours?: boolean;
-  showMinutes?: boolean;
-  showSeconds?: boolean;
-}
-
-interface TimeRemaining {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-  total: number;
-}
+import {
+  CountdownTimerProps,
+  TimeRemaining,
+} from './CountdownTimer.interfaces';
 
 export default function CountdownTimer({
   endDate,

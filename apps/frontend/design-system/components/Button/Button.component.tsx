@@ -1,8 +1,9 @@
 import React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+import { ButtonProps } from './Button.interfaces';
 
-const buttonVariants = cva(
+export const buttonVariants = cva(
   // Base styles
   'inline-flex items-center justify-center rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
   {
@@ -41,16 +42,6 @@ const buttonVariants = cva(
     },
   },
 );
-
-export interface ButtonProps
-  extends
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  children: React.ReactNode;
-  loading?: boolean;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-}
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (

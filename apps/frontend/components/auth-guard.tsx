@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/context/auth-context';
+import { useAuth } from '@/context/AuthContext/AuthContext.context';
 import { Loader2 } from 'lucide-react';
 
 interface AuthGuardProps {

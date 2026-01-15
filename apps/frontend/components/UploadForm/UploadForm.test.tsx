@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
-import { UploadForm } from '../upload-form';
+import { UploadForm } from './UploadForm.component';
 
 describe('UploadForm', () => {
   const mockOnFilesSelected = jest.fn();

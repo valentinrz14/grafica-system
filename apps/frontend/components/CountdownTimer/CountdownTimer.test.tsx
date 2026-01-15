@@ -1,6 +1,6 @@
 import { render, act } from '@testing-library/react';
 import { screen } from '@testing-library/dom';
-import { CompactCountdownTimer } from '../countdown-timer';
+import { CompactCountdownTimer } from './CountdownTimer.component';
 
 describe('CompactCountdownTimer', () => {
   beforeEach(() => {

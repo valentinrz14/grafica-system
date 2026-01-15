@@ -1,8 +1,9 @@
 import React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+import { CardProps } from './Card.interfaces';
 
-const cardVariants = cva(
+export const cardVariants = cva(
   // Base styles
   'rounded-lg transition-all',
   {
@@ -31,13 +32,6 @@ const cardVariants = cva(
     },
   },
 );
-
-export interface CardProps
-  extends
-    React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof cardVariants> {
-  children: React.ReactNode;
-}
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant, padding, hoverable, children, ...props }, ref) => {

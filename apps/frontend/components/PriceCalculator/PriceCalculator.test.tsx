@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
-import { PriceCalculator } from '../price-calculator';
+import { PriceCalculator } from './PriceCalculator.component';
 import { OrderOptions, PriceBreakdown } from '@/lib/api-client';
 
 describe('PriceCalculator', () => {

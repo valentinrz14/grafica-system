@@ -1,8 +1,9 @@
 import React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+import { InputProps } from './Input.interfaces';
 
-const inputVariants = cva(
+export const inputVariants = cva(
   // Base styles
   'w-full rounded-lg border font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
   {
@@ -27,18 +28,6 @@ const inputVariants = cva(
     },
   },
 );
-
-export interface InputProps
-  extends
-    Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
-    VariantProps<typeof inputVariants> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  containerClassName?: string;
-}
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (

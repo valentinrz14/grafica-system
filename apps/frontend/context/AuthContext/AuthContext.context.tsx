@@ -7,23 +7,7 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-
-export interface User {
-  id: string;
-  email: string;
-  role: 'USER' | 'ADMIN';
-}
-
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  isAdmin: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  setAuthData: (user: User, token: string) => void;
-}
+import { AuthContextType, User } from './AuthContext.interfaces';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -100,7 +84,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
-    // Redirect to login page after logout
     window.location.href = '/login';
   }, []);
 

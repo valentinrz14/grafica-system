@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth-context';
-import { useToast } from '@/context/toast-context';
+import { useAuth } from '@/context/AuthContext/AuthContext.context';
+import { useToast } from '@/context/ToastContext/ToastContext.context';
 
 export function useLogout() {
   const router = useRouter();

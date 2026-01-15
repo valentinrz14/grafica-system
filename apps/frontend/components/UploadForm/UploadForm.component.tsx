@@ -2,13 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Upload, X } from 'lucide-react';
-
-interface UploadFormProps {
-  onFilesSelected: (files: File[]) => void;
-  selectedFiles: File[];
-  onRemoveFile: (index: number) => void;
-  isUploading: boolean;
-}
+import { UploadFormProps } from './UploadForm.interfaces';
 
 export function UploadForm({
   onFilesSelected,

@@ -3,11 +3,11 @@
 import { useParams, useRouter } from 'next/navigation';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge.component';
 import { FilePreview } from '@/components/file-preview';
-import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner.component';
+import { LoadingSpinner } from '@/design-system/components/LoadingSpinner/LoadingSpinner.component';
 import { formatOrderDate } from '@/lib/utils';
 import { ArrowLeft, Mail, Calendar, Package } from 'lucide-react';
 import Link from 'next/link';
-import { useToast } from '@/context/toast-context';
+import { useToast } from '@/context/ToastContext/ToastContext.context';
 import { AuthGuard } from '@/components/auth-guard';
 import { useOrder, useUpdateOrderStatus } from '@/lib/hooks/use-orders';
 
@@ -16,12 +16,7 @@ export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = params.id as string;
-
-  const {
-    data: order,
-    isLoading,
-    error,
-  } = useOrder(orderId);
+  const { data: order, isLoading, error } = useOrder(orderId);
   const updateOrderStatus = useUpdateOrderStatus();
 
   if (error) {
@@ -171,7 +166,8 @@ export default function OrderDetailPage() {
                     <button
                       onClick={() => handleStatusChange('PENDING')}
                       disabled={
-                        updateOrderStatus.isPending || order.status === 'PENDING'
+                        updateOrderStatus.isPending ||
+                        order.status === 'PENDING'
                       }
                       className="w-full px-4 py-3 rounded-lg text-left font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-yellow-50 text-yellow-800 hover:bg-yellow-100 border border-yellow-200"
                     >

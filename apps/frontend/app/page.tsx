@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UploadForm } from '@/components/upload-form';
-import { PriceCalculator } from '@/components/price-calculator';
+import { UploadForm } from '@/components/UploadForm/UploadForm.component';
+import { PriceCalculator } from '@/components/PriceCalculator/PriceCalculator.component';
 import {
   apiClient,
   OrderOptions,
@@ -20,11 +20,11 @@ import {
   Tag,
   Clock,
 } from 'lucide-react';
-import { useToast } from '@/context/toast-context';
-import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/context/ToastContext/ToastContext.context';
+import { useAuth } from '@/context/AuthContext/AuthContext.context';
 import { useCreateOrder } from '@/lib/hooks/use-orders';
 import { MobileMenu } from '@/components/mobile-menu';
-import { CompactCountdownTimer } from '@/components/countdown-timer';
+import { CompactCountdownTimer } from '@/components/CountdownTimer/CountdownTimer.component';
 
 interface Promotion {
   id: string;
