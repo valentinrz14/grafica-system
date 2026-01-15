@@ -39,9 +39,11 @@ Thumbs.db
 *.swo
 *~
 
-# Uploads
-apps/backend/uploads/
-uploads/
+# Uploads (ignore all files but keep directory structure)
+apps/backend/uploads/*
+!apps/backend/uploads/.gitkeep
+uploads/*
+!uploads/.gitkeep
 
 # Prisma
 apps/backend/prisma/migrations/
