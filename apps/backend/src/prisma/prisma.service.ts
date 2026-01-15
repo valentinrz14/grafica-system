@@ -24,7 +24,6 @@ export class PrismaService
       );
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const pool = new Pool({
       connectionString,
       max: 10,
@@ -32,7 +31,6 @@ export class PrismaService
       connectionTimeoutMillis: 10000,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     pool.on('error', (err: Error) => {
       console.error('PostgreSQL pool error:', err);
     });

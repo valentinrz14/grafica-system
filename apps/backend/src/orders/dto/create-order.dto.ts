@@ -81,7 +81,6 @@ function IsBusinessHours(validationOptions?: ValidationOptions) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           if (!timeRegex.test(value)) return false;
 
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           const [hours] = value.split(':').map(Number);
           return hours >= 8 && hours < 19; // 8 AM to 7 PM (19:00)
         },
