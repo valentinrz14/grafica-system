@@ -1,11 +1,15 @@
 [phases.setup]
-nixPkgs = ["nodejs", "npm"]
+nixPkgs = ["nodejs", "yarn"]
 
 [phases.install]
-cmds = ["npm ci --include=dev"]
+cmds = [
+  "cd ../..",
+  "yarn install --frozen-lockfile",
+  "cd apps/backend"
+]
 
 [phases.build]
-cmds = ["npx prisma generate", "npm run build"]
+cmds = ["npx prisma generate", "yarn build"]
 
 [start]
-cmd = "npm run start:prod"
+cmd = "yarn start:prod"
