@@ -1,6 +1,6 @@
 'use client';
 
-import { OrderOptions, PriceBreakdown } from '@/lib/api-client';
+import { OrderOptions } from '@/lib/api-client';
 import {
   Select,
   SelectContent,
@@ -8,13 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-interface PriceCalculatorProps {
-  options: OrderOptions;
-  onOptionsChange: (options: OrderOptions) => void;
-  priceBreakdown: PriceBreakdown | null;
-  isCalculating: boolean;
-}
+import { PriceCalculatorProps } from './PriceCalculator.interfaces';
 
 export function PriceCalculator({
   options,

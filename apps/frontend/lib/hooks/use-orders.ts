@@ -1,21 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api-client';
 
-export function useOrders() {
+export function useOrders(enabled = true) {
   return useQuery({
     queryKey: ['orders'],
     queryFn: () => {
       return apiClient.getOrders();
     },
+    enabled,
+    retry: false,
   });
 }
 
-export function useMyOrders() {
+export function useMyOrders(enabled = true) {
   return useQuery({
     queryKey: ['my-orders'],
     queryFn: () => {
       return apiClient.getMyOrders();
     },
+    enabled,
+    retry: false,
   });
 }
 

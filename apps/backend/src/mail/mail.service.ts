@@ -123,7 +123,7 @@ export class MailService {
       });
 
       // Send email
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
       const info = await this.transporter.sendMail({
         from: `"${process.env.MAIL_FROM_NAME || 'Gráfica System'}" <${process.env.MAIL_FROM_ADDRESS || process.env.GMAIL_USER}>`,
         to: orderData.userEmail,
@@ -131,7 +131,6 @@ export class MailService {
         html,
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       this.logger.log(`Order confirmation email sent: ${info.messageId}`);
     } catch (error) {
       this.logger.error('Failed to send order confirmation email:', error);

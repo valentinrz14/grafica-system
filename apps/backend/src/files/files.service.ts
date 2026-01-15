@@ -7,15 +7,17 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
-import pdfParse from 'pdf-parse';
+import { UploadFileResult } from './files.interface';
 
-export interface UploadFileResult {
-  id: string;
-  fileName: string;
-  originalName: string;
-  fileUrl: string;
-  pages: number;
-}
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { PDFParse } = require('pdf-parse') as {
+  PDFParse: new (options: { url: string }) => {
+    getInfo: (options: { parsePageInfo: boolean }) => Promise<{
+      numPages: number;
+    }>;
+    destroy: () => Promise<void>;
+  };
+};
 
 @Injectable()
 export class FilesService {
@@ -29,10 +31,11 @@ export class FilesService {
   private readonly maxFileSize = 10 * 1024 * 1024;
 
   constructor(private prisma: PrismaService) {
-    this.uploadDir =
-      process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+    const uploadDir = process.env.UPLOAD_DIR || './uploads';
+    this.uploadDir = path.isAbsolute(uploadDir)
+      ? uploadDir
+      : path.resolve(process.cwd(), uploadDir);
 
-    // Ensure upload directory exists
     if (!fs.existsSync(this.uploadDir)) {
       fs.mkdirSync(this.uploadDir, { recursive: true });
     }
@@ -79,11 +82,30 @@ export class FilesService {
 
   private async countPages(file: Express.Multer.File): Promise<number> {
     if (file.mimetype === 'application/pdf') {
+      let parser: InstanceType<typeof PDFParse> | null = null;
       try {
-        const data = await pdfParse(file.buffer);
-        return data.numpages;
-      } catch {
-        throw new BadRequestException('Failed to parse PDF file');
+        const tempFileName = `${randomUUID()}.pdf`;
+        const tempFilePath = path.join(this.uploadDir, tempFileName);
+        fs.writeFileSync(tempFilePath, file.buffer);
+
+        parser = new PDFParse({ url: tempFilePath });
+
+        const result = await parser.getInfo({ parsePageInfo: true });
+
+        fs.unlinkSync(tempFilePath);
+
+        return result.numPages || 1;
+      } catch (error) {
+        console.error('PDF Parse Error:', error);
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
+        throw new BadRequestException(
+          `Failed to parse PDF file: ${errorMessage}`,
+        );
+      } finally {
+        if (parser) {
+          await parser.destroy();
+        }
       }
     }
 

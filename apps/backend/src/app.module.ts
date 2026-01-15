@@ -21,8 +21,8 @@ import { RolesGuard } from './auth/guards/roles.guard';
   imports: [
     ThrottlerModule.forRoot([
       {
-        ttl: 60000, // 60 segundos
-        limit: 10, // 10 requests por TTL
+        ttl: 60000,
+        limit: 200,
       },
     ]),
     PrismaModule,
@@ -42,15 +42,15 @@ import { RolesGuard } from './auth/guards/roles.guard';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard, // Guard global - todos los endpoints requieren auth por defecto
+      useClass: JwtAuthGuard,
     },
     {
       provide: APP_GUARD,
-      useClass: RolesGuard, // Roles guard - verifica permisos basados en roles
+      useClass: RolesGuard,
     },
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard, // Rate limiting global
+      useClass: ThrottlerGuard,
     },
   ],
 })

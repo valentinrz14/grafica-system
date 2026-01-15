@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { OrderCard } from '@/components/order-card';
 import { Package } from 'lucide-react';
 import Link from 'next/link';
-import { useToast } from '@/context/toast-context';
-import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/context/ToastContext/ToastContext.context';
+import { useAuth } from '@/context/AuthContext/AuthContext.context';
 import { AuthGuard } from '@/components/auth-guard';
 import { MobileMenu } from '@/components/mobile-menu';
 import { PageHeader } from '@/components/PageHeader/PageHeader.component';
-import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner.component';
+import { LoadingSpinner } from '@/design-system/components/LoadingSpinner/LoadingSpinner.component';
 import { EmptyState } from '@/components/EmptyState/EmptyState.component';
 import { useMyOrders } from '@/lib/hooks/use-orders';
 
@@ -20,7 +20,22 @@ export default function MyOrdersPage() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const { data: orders = [], isLoading, error } = useMyOrders();
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 MyOrders Auth State:', {
+      isAuthenticated,
+      authLoading,
+      hasUser: !!user,
+      userEmail: user?.email,
+    });
+  }, [isAuthenticated, authLoading, user]);
+
+  const {
+    data: orders = [],
+    isLoading,
+    error,
+  } = useMyOrders(isAuthenticated && !authLoading);
 
   useEffect(() => {
     setIsMounted(true);
@@ -37,9 +52,15 @@ export default function MyOrdersPage() {
     }
   }, [isMounted, authLoading, isAuthenticated, user, router]);
 
-  if (error) {
-    showToast('Error al cargar tus pedidos', 'error');
-  }
+  useEffect(() => {
+    if (error) {
+      // Don't show error if it's just "not authenticated" - AuthGuard will handle redirect
+      const errorMessage = error.message || error.toString();
+      if (errorMessage !== 'NOT_AUTHENTICATED') {
+        showToast('Error al cargar tus pedidos', 'error');
+      }
+    }
+  }, [error, showToast]);
 
   return (
     <AuthGuard requireAdmin={false}>

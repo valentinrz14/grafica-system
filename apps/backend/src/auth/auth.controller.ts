@@ -56,7 +56,6 @@ export class AuthController {
     @Req() req: any,
     @Body() profileDto: CompleteProfileDto,
   ) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const userId = req.user.id;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const result = await this.authService.completeProfile(userId, profileDto);
@@ -71,7 +70,6 @@ export class AuthController {
   @Get('profile')
   @HttpCode(HttpStatus.OK)
   async getProfile(@Req() req: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const userId = req.user.id;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const user = await this.usersService.findById(userId);

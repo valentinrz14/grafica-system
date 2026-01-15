@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth-context';
-import { useToast } from '@/context/toast-context';
-import { PasswordInput } from '@/components/PasswordInput/PasswordInput.component';
+import { useAuth } from '@/context/AuthContext/AuthContext.context';
+import { useToast } from '@/context/ToastContext/ToastContext.context';
+import { PasswordInput } from '@/design-system/components/PasswordInput/PasswordInput.component';
 import { UserPlus, Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {

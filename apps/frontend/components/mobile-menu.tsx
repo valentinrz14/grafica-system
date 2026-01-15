@@ -1,10 +1,9 @@
 'use client';
 
-import { Fragment } from 'react';
 import { X, LogOut, User, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth-context';
-import { useToast } from '@/context/toast-context';
+import { useAuth } from '@/context/AuthContext/AuthContext.context';
+import { useToast } from '@/context/ToastContext/ToastContext.context';
 
 interface MobileMenuProps {
   isOpen: boolean;
