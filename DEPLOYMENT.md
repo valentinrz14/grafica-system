@@ -74,7 +74,12 @@ SELECT * FROM pg_tables WHERE schemaname = 'public';
    - **Build Command**: Dejar vacío (usa railway.json)
    - **Start Command**: Dejar vacío (usa railway.json)
 
-**IMPORTANTE**: El proyecto incluye archivos `railway.json` y `nixpacks.toml` que configuran automáticamente el build. Railway usará npm (no yarn) para instalar dependencias y ejecutar el build.
+**IMPORTANTE**: El proyecto es un **monorepo con workspaces** y usa **Yarn**. Los archivos `railway.json` y `nixpacks.toml` están configurados para:
+
+1. Instalar dependencias desde la raíz del monorepo con `yarn install --frozen-lockfile`
+2. Generar el Prisma Client
+3. Ejecutar migraciones
+4. Construir el backend con `yarn build`
 
 ### 2.3 Configurar Variables de Entorno
 
@@ -103,17 +108,14 @@ MAIL_FROM_NAME=Gráfica System
 MAIL_FROM_ADDRESS=tu-email@gmail.com
 ```
 
-### 2.4 Ejecutar Migraciones de Prisma
+### 2.4 Verificar el Despliegue
 
 Después del primer deploy:
 
 1. Ve a la pestaña **"Deploy Logs"**
-2. Cuando el deploy termine, ve a **"Settings" → "Service"**
-3. En **"Build Command"** agrega:
-   ```bash
-   npm install && npx prisma generate && npx prisma migrate deploy && npm run build
-   ```
-4. Redeploya haciendo click en **"Redeploy"**
+2. Verifica que el build se complete exitosamente
+3. Las migraciones de Prisma se ejecutan automáticamente gracias a `railway.json`
+4. Si hay errores, verifica las variables de entorno (especialmente `DATABASE_URL`)
 
 ### 2.5 Ejecutar Seed (Opcional pero recomendado)
 
@@ -122,13 +124,18 @@ Para crear el usuario admin inicial:
 1. Ve a la pestaña **"Settings" → "Service"**
 2. En **"Start Command"** temporalmente cambia a:
    ```bash
-   npm run prisma:seed && npm run start:prod
+   yarn prisma:seed && yarn start:prod
    ```
 3. Redeploya
 4. Una vez completado el seed, vuelve a cambiar a:
    ```bash
-   npm run start:prod
+   yarn start:prod
    ```
+
+**Nota**: El seed creará un usuario admin con:
+
+- Email: `admin@grafica.com`
+- Password: `Admin123!`
 
 ### 2.6 Obtener URL del Backend
 
