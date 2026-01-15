@@ -49,6 +49,7 @@ model Order {
   @@index([createdAt])
   @@index([userId])
   @@index([promotionId])
+  @@index([userEmail])
   @@map("orders")
 }
 
@@ -113,6 +114,7 @@ model Product {
 
   @@index([categoryId])
   @@index([slug])
+  @@index([active, sortOrder])
   @@map("products")
 }
 
@@ -193,6 +195,7 @@ model Promotion {
   @@index([active])
   @@index([startDate])
   @@index([endDate])
+  @@index([active, startDate, endDate])
   @@map("promotions")
 }
 
