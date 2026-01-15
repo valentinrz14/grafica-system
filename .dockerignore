@@ -1,0 +1,53 @@
+# Dependencies
+node_modules
+**/node_modules
+npm-debug.log
+yarn-error.log
+
+# Build outputs
+dist
+**/dist
+build
+**/build
+.next
+
+# Environment files
+.env
+.env.*
+**/.env
+**/.env.*
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Uploads
+**/uploads/*
+!**/uploads/.gitkeep
+
+# Tests
+coverage
+**/*.spec.ts
+**/test
+**/__tests__
+
+# Documentation
+*.md
+
+# Frontend app (not needed for backend)
+apps/frontend
+
+# Misc
+.turbo
