@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import { UploadForm } from '../upload-form';
 
@@ -61,7 +62,7 @@ describe('UploadForm', () => {
     // Find the X icon button for removing files
     const removeButtons = screen.getAllByRole('button');
     // The first button is the upload area, subsequent buttons are remove buttons
-    const removeButton = removeButtons.find((button) =>
+    const removeButton = removeButtons.find((button: HTMLElement) =>
       button.querySelector('svg.lucide-x'),
     );
 
