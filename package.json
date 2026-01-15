@@ -16,7 +16,7 @@
     "build:frontend": "cd apps/frontend && npm run build"
   },
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",
