@@ -1,9 +1,19 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { OrderCard } from '@/components/order-card';
-import { Settings, Package, Search, X } from 'lucide-react';
+import {
+  Settings,
+  Package,
+  Search,
+  X,
+  Tag,
+  TrendingUp,
+  BarChart3,
+} from 'lucide-react';
 import { useToast } from '@/context/toast-context';
+import { useAuth } from '@/context/auth-context';
 import { AuthGuard } from '@/components/auth-guard';
 import { MobileMenu } from '@/components/mobile-menu';
 import { PageHeader } from '@/components/PageHeader/PageHeader.component';
@@ -11,7 +21,9 @@ import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner.compo
 import { useOrders } from '@/lib/hooks/use-orders';
 
 export default function AdminPage() {
+  const router = useRouter();
   const { showToast } = useToast();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [statusFilter, setStatusFilter] = useState<
     'ALL' | 'PENDING' | 'PRINTING' | 'DONE' | 'EXPIRED'
   >('ALL');
@@ -20,7 +32,12 @@ export default function AdminPage() {
   const [dateFilter, setDateFilter] = useState<
     'ALL' | 'TODAY' | 'WEEK' | 'MONTH'
   >('ALL');
-  const { data: orders = [], isLoading, error, refetch } = useOrders();
+  const {
+    data: orders = [],
+    isLoading,
+    error,
+    refetch,
+  } = useOrders(isAuthenticated && !authLoading);
   const filteredOrders = useMemo(() => {
     let filtered = orders;
 
@@ -98,6 +115,76 @@ export default function AdminPage() {
         />
 
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 w-full">
+          {/* Quick Access Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <button
+              onClick={() => router.push('/admin/promotions')}
+              className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 p-6 text-left group"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="bg-white/20 p-3 rounded-lg">
+                  <Tag className="h-8 w-8" />
+                </div>
+                <TrendingUp className="h-6 w-6 opacity-70 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Promociones</h3>
+              <p className="text-purple-100 text-sm">
+                Gestionar campañas promocionales, descuentos y ofertas
+                especiales
+              </p>
+            </button>
+
+            <button
+              onClick={() =>
+                showToast('Próximamente: Gestión de Productos', 'info')
+              }
+              className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 p-6 text-left group"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="bg-white/20 p-3 rounded-lg">
+                  <Package className="h-8 w-8" />
+                </div>
+                <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                  Próximamente
+                </span>
+              </div>
+              <h3 className="text-xl font-bold mb-2">Productos</h3>
+              <p className="text-blue-100 text-sm">
+                Administrar catálogo de productos y servicios de impresión
+              </p>
+            </button>
+
+            <button
+              onClick={() =>
+                showToast('Próximamente: Analíticas y Reportes', 'info')
+              }
+              className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 p-6 text-left group"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="bg-white/20 p-3 rounded-lg">
+                  <BarChart3 className="h-8 w-8" />
+                </div>
+                <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                  Próximamente
+                </span>
+              </div>
+              <h3 className="text-xl font-bold mb-2">Analíticas</h3>
+              <p className="text-green-100 text-sm">
+                Reportes de ventas, tendencias y estadísticas del negocio
+              </p>
+            </button>
+          </div>
+
+          {/* Orders Section Title */}
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Gestión de Pedidos
+            </h2>
+            <p className="text-gray-600 text-sm mt-1">
+              Administra y supervisa todos los pedidos de impresión
+            </p>
+          </div>
+
           <div className="space-y-4 mb-6 md:mb-8">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
               <div className="relative">

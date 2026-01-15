@@ -10,11 +10,37 @@ import {
   UploadedFile,
   PriceBreakdown,
 } from '@/lib/api-client';
-import { CheckCircle, Printer, LogIn, LogOut, User, Menu } from 'lucide-react';
+import {
+  CheckCircle,
+  Printer,
+  LogIn,
+  LogOut,
+  User,
+  Menu,
+  Tag,
+  Clock,
+} from 'lucide-react';
 import { useToast } from '@/context/toast-context';
 import { useAuth } from '@/context/auth-context';
 import { useCreateOrder } from '@/lib/hooks/use-orders';
 import { MobileMenu } from '@/components/mobile-menu';
+import { CompactCountdownTimer } from '@/components/countdown-timer';
+
+interface Promotion {
+  id: string;
+  name: string;
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
+  imageUrl?: string | null;
+  badgeText?: string | null;
+  badgeColor?: string | null;
+  type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'BUNDLE';
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  priority: number;
+}
 
 export default function HomePage() {
   const router = useRouter();
@@ -26,10 +52,35 @@ export default function HomePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [loadingPromotions, setLoadingPromotions] = useState(true);
 
   useEffect(() => {
     setIsMounted(true);
+    loadPromotions();
   }, []);
+
+  const loadPromotions = async () => {
+    try {
+      setLoadingPromotions(true);
+      const response = await fetch('http://localhost:4000/promotions');
+      const data = await response.json();
+      setPromotions(data || []);
+    } catch (error) {
+      console.error('Error loading promotions:', error);
+    } finally {
+      setLoadingPromotions(false);
+    }
+  };
+
+  const getDiscountText = (promo: Promotion) => {
+    if (promo.type === 'PERCENTAGE') {
+      return `${promo.discountValue}% OFF`;
+    } else if (promo.type === 'FIXED_AMOUNT') {
+      return `$${promo.discountValue} OFF`;
+    }
+    return 'Oferta';
+  };
 
   useEffect(() => {
     if (
@@ -123,36 +174,34 @@ export default function HomePage() {
 
   // Validate pickup date and time
   const isPickupValid = () => {
-    // If both are provided, validate them
-    if (pickupDate && pickupTime) {
-      // Parse date in local timezone to avoid UTC conversion issues
-      const [year, month, day] = pickupDate.split('-').map(Number);
-      const selectedDate = new Date(year, month - 1, day);
-      const dayOfWeek = selectedDate.getDay();
-
-      // Check if it's Sunday (0)
-      if (dayOfWeek === 0) {
-        return false;
-      }
-
-      // Check if date is more than 7 days in the future
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const maxDate = new Date(today);
-      maxDate.setDate(maxDate.getDate() + 7);
-
-      if (selectedDate > maxDate) {
-        return false;
-      }
-
-      // Check time range
-      const [hours] = pickupTime.split(':').map(Number);
-      if (hours < 8 || hours >= 19) {
-        return false;
-      }
+    // Ambos campos son requeridos
+    if (!pickupDate || !pickupTime) {
+      return false;
     }
-    // If only one is provided, it's invalid
-    if ((pickupDate && !pickupTime) || (!pickupDate && pickupTime)) {
+
+    // Parse date in local timezone to avoid UTC conversion issues
+    const [year, month, day] = pickupDate.split('-').map(Number);
+    const selectedDate = new Date(year, month - 1, day);
+    const dayOfWeek = selectedDate.getDay();
+
+    // Check if it's Sunday (0)
+    if (dayOfWeek === 0) {
+      return false;
+    }
+
+    // Check if date is more than 7 days in the future
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const maxDate = new Date(today);
+    maxDate.setDate(maxDate.getDate() + 7);
+
+    if (selectedDate > maxDate) {
+      return false;
+    }
+
+    // Check time range
+    const [hours] = pickupTime.split(':').map(Number);
+    if (hours < 8 || hours >= 19) {
       return false;
     }
 
@@ -353,6 +402,102 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 w-full">
+        {/* Promociones Compactas - Skeletons mientras carga */}
+        {loadingPromotions && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-5 bg-gray-200 rounded animate-pulse" />
+                <div className="h-6 w-40 bg-gray-200 rounded animate-pulse" />
+              </div>
+              <div className="h-9 w-28 bg-gray-200 rounded-lg animate-pulse" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-100"
+                >
+                  <div className="h-40 w-full bg-gray-200 animate-pulse" />
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2 animate-pulse" />
+                    <div className="h-3 bg-gray-200 rounded w-full mb-1 animate-pulse" />
+                    <div className="h-3 bg-gray-200 rounded w-5/6 mb-3 animate-pulse" />
+                    <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Promociones Compactas - Contenido real */}
+        {!loadingPromotions && promotions.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Tag className="h-5 w-5 text-purple-600" />
+                <h3 className="text-xl font-bold text-gray-900">
+                  Promociones activas
+                </h3>
+              </div>
+              <button
+                onClick={() => router.push('/promociones')}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm shadow-sm hover:shadow-md"
+              >
+                Ver todas →
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {promotions.slice(0, 3).map((promo) => (
+                <button
+                  key={promo.id}
+                  onClick={() => router.push('/promociones')}
+                  className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 text-left"
+                >
+                  {promo.imageUrl && (
+                    <div className="relative h-40 w-full">
+                      <img
+                        src={promo.imageUrl}
+                        alt={promo.title || promo.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute top-3 right-3 text-xs font-bold text-white bg-purple-600 px-3 py-1.5 rounded-lg shadow-lg">
+                        {getDiscountText(promo)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h4 className="text-sm font-bold text-gray-900 mb-2">
+                      {promo.title || promo.name}
+                    </h4>
+                    {promo.description && (
+                      <p className="text-xs text-gray-600 mb-3">
+                        {promo.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-1 text-gray-500">
+                      <Clock className="h-3 w-3" />
+                      <span className="text-xs">Termina:</span>
+                      <CompactCountdownTimer endDate={promo.endDate} />
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Cotizador Section */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Cotizador de Impresión
+          </h2>
+          <p className="text-gray-600">
+            Subí tus archivos y obtené tu presupuesto al instante
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           {/* Left Column - Upload */}
           <div className="space-y-6 md:space-y-8">
@@ -363,7 +508,9 @@ export default function HomePage() {
               <UploadForm
                 onFilesSelected={setSelectedFiles}
                 selectedFiles={selectedFiles}
-                onRemoveFile={() => {}}
+                onRemoveFile={(index) => {
+                  setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+                }}
                 isUploading={isUploading}
               />
 
@@ -534,7 +681,8 @@ export default function HomePage() {
                   {/* Pickup Date and Time */}
                   <div className="border-t border-gray-200 pt-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      📅 Fecha y hora de retiro
+                      📅 Fecha y hora de retiro{' '}
+                      <span className="text-red-500">*</span>
                     </h3>
                     <p className="text-sm text-gray-600 mb-4">
                       Seleccioná cuándo querés retirar tu pedido (Lunes a
@@ -548,7 +696,8 @@ export default function HomePage() {
                           htmlFor="pickupDate"
                           className="block text-sm font-medium text-gray-700 mb-2"
                         >
-                          Fecha de retiro
+                          Fecha de retiro{' '}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="date"
@@ -612,7 +761,7 @@ export default function HomePage() {
                           htmlFor="pickupTime"
                           className="block text-sm font-medium text-gray-700 mb-2"
                         >
-                          Hora de retiro
+                          Hora de retiro <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="time"

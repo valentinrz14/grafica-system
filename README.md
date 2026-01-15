@@ -172,17 +172,70 @@ Se abrirá en http://localhost:5555
 
 Lee [CONTRIBUTING.md](CONTRIBUTING.md) para conocer las guías de contribución, estándares de código y flujo de trabajo.
 
-## Deploy
+## 🚀 Deploy a Producción
 
-- **Frontend**: Vercel (free tier)
-- **Backend**: Railway (free tier)
-- **Database**: Railway PostgreSQL o Supabase (free tier)
-- **Storage**: Cloudflare R2 (10GB gratis)
+**📘 Ver la guía completa de deploy**: [DEPLOYMENT.md](./DEPLOYMENT.md)
 
-## Fase 2 (Futuro)
+### Stack Recomendado
 
-- WhatsApp API para notificaciones
-- Pagos online
-- Autenticación JWT
-- Multi-tenant (múltiples gráficas)
-- Dashboard de analytics
+- **Frontend**: Vercel (gratis - 100GB bandwidth/mes)
+- **Backend**: Railway (~$5/mes con $5 gratis mensuales)
+- **Database**: Neon PostgreSQL (gratis - 0.5GB storage)
+- **Email**: Gmail (gratis - 500 emails/día)
+
+**Costo total estimado**: ~$0-5/mes
+
+La guía de deployment incluye:
+
+- ✅ Paso a paso detallado para cada servicio
+- ✅ Configuración de variables de entorno
+- ✅ Configuración de Gmail App Password
+- ✅ Migraciones de base de datos
+- ✅ Troubleshooting común
+- ✅ Checklist de verificación final
+
+## Características Implementadas
+
+### Autenticación y Usuarios
+
+- ✅ Registro e inicio de sesión con JWT
+- ✅ Roles de usuario (USER, ADMIN)
+- ✅ Guard de autenticación en rutas protegidas
+- ✅ Perfil de usuario con datos adicionales
+
+### Sistema de Pedidos
+
+- ✅ Cotización instantánea
+- ✅ Subida de archivos PDF
+- ✅ Configuración de opciones (A4/A3/Carta, color, duplex)
+- ✅ Historial de pedidos por usuario
+- ✅ Estados de pedido (Pendiente, En impresión, Listo, Expirado)
+- ✅ Notificaciones por email al crear pedidos
+
+### Sistema de Promociones
+
+- ✅ Gestión completa de promociones (CRUD)
+- ✅ Tipos de descuento (porcentaje, monto fijo)
+- ✅ Programación de fechas
+- ✅ Límite de usos
+- ✅ Estados (Activo, Programado, Expirado, Pausado)
+- ✅ Priorización de promociones
+- ✅ Estadísticas de uso
+- ✅ Visualización para usuarios
+
+### Panel de Administración
+
+- ✅ Dashboard con accesos rápidos
+- ✅ Gestión de pedidos con filtros
+- ✅ Cambio de estados
+- ✅ Gestión de promociones
+- ✅ Estadísticas de promociones
+
+## Roadmap Futuro
+
+- [ ] WhatsApp API para notificaciones
+- [ ] Pagos online (Mercado Pago/Stripe)
+- [ ] Multi-tenant (múltiples gráficas)
+- [ ] Dashboard de analytics avanzado
+- [ ] Google OAuth
+- [ ] Exportación de reportes PDF

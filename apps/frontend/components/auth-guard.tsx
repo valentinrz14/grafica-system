@@ -41,13 +41,25 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     !isAuthenticated ||
     (requireAdmin && !isAdmin)
   ) {
+    let message = 'Verificando autenticación...';
+    if (isRedirecting && !isAuthenticated) {
+      message = 'Redirigiendo al login...';
+    } else if (isRedirecting && requireAdmin && !isAdmin) {
+      message = 'Redirigiendo a inicio...';
+    } else if (isRedirecting) {
+      message = 'Redirigiendo...';
+    }
+
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-600">
-            {isRedirecting ? 'Redirigiendo...' : 'Verificando autenticación...'}
-          </p>
+          <p className="mt-4 text-gray-600">{message}</p>
+          {!isAuthenticated && !isLoading && (
+            <p className="mt-2 text-sm text-gray-500">
+              Necesitas iniciar sesión para acceder a esta página
+            </p>
+          )}
         </div>
       </div>
     );

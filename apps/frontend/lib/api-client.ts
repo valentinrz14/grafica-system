@@ -70,6 +70,30 @@ class ApiClient {
     return headers;
   }
 
+  private async handleResponse(response: Response): Promise<any> {
+    if (!response.ok) {
+      // Si es 401, significa que el token expiró o no es válido
+      if (response.status === 401) {
+        // Limpiar el localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('auth_user');
+
+          // Redirigir automáticamente al login
+          const currentPath = window.location.pathname;
+          window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+        }
+        // Lanzar error para detener la ejecución
+        throw new Error('AUTH_EXPIRED');
+      }
+
+      const error = await response.json();
+      throw new Error(error.message || 'Request failed');
+    }
+
+    return response.json();
+  }
+
   async uploadFile(file: File): Promise<UploadedFile> {
     const formData = new FormData();
     formData.append('file', file);
@@ -119,12 +143,7 @@ class ApiClient {
       body: JSON.stringify(orderData),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create order');
-    }
-
-    const result = await response.json();
+    const result = await this.handleResponse(response);
     return result.data;
   }
 
@@ -134,13 +153,7 @@ class ApiClient {
       headers: this.getAuthHeaders(),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('🔴 getOrders: Error response:', error);
-      throw new Error(error.message || 'Failed to fetch orders');
-    }
-
-    const result = await response.json();
+    const result = await this.handleResponse(response);
     return result.data;
   }
 
@@ -150,13 +163,7 @@ class ApiClient {
       headers: this.getAuthHeaders(),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('🔴 getMyOrders: Error response:', error);
-      throw new Error(error.message || 'Failed to fetch your orders');
-    }
-
-    const result = await response.json();
+    const result = await this.handleResponse(response);
     return result.data;
   }
 
@@ -165,12 +172,7 @@ class ApiClient {
       headers: this.getAuthHeaders(),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to fetch order');
-    }
-
-    const result = await response.json();
+    const result = await this.handleResponse(response);
     return result.data;
   }
 
@@ -184,17 +186,109 @@ class ApiClient {
       body: JSON.stringify({ status }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to update order status');
-    }
-
-    const result = await response.json();
+    const result = await this.handleResponse(response);
     return result.data;
   }
 
   getFileUrl(fileUrl: string): string {
     return `${this.baseUrl}${fileUrl}`;
+  }
+
+  // ============================================
+  // Admin Promotions Methods
+  // ============================================
+
+  async getAllPromotions(): Promise<any[]> {
+    const response = await fetch(`${this.baseUrl}/admin/promotions`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse(response);
+  }
+
+  async getPromotionById(id: string): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/admin/promotions/${id}`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse(response);
+  }
+
+  async getPromotionStatistics(): Promise<any> {
+    const response = await fetch(
+      `${this.baseUrl}/admin/promotions/statistics`,
+      {
+        headers: this.getAuthHeaders(),
+      },
+    );
+
+    return this.handleResponse(response);
+  }
+
+  async createPromotion(data: any): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/admin/promotions`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    return this.handleResponse(response);
+  }
+
+  async updatePromotion(id: string, data: any): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/admin/promotions/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    return this.handleResponse(response);
+  }
+
+  async deletePromotion(id: string): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/admin/promotions/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+
+    await this.handleResponse(response);
+  }
+
+  async togglePromotionActive(id: string): Promise<any> {
+    const response = await fetch(
+      `${this.baseUrl}/admin/promotions/${id}/toggle-active`,
+      {
+        method: 'PATCH',
+        headers: this.getAuthHeaders(),
+      },
+    );
+
+    return this.handleResponse(response);
+  }
+
+  async renewPromotion(id: string, daysToExtend: number): Promise<any> {
+    const response = await fetch(
+      `${this.baseUrl}/admin/promotions/${id}/renew`,
+      {
+        method: 'PATCH',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ daysToExtend }),
+      },
+    );
+
+    return this.handleResponse(response);
+  }
+
+  async resetPromotionUsage(id: string): Promise<any> {
+    const response = await fetch(
+      `${this.baseUrl}/admin/promotions/${id}/reset-usage`,
+      {
+        method: 'PATCH',
+        headers: this.getAuthHeaders(),
+      },
+    );
+
+    return this.handleResponse(response);
   }
 }
 
