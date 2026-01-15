@@ -26,23 +26,29 @@ model User {
 }
 
 model Order {
-  id         String      @id @default(cuid())
-  userEmail  String?     @map("user_email")
-  status     OrderStatus @default(PENDING)
-  totalPrice Float       @map("total_price")
-  options    Json
-  createdAt  DateTime    @default(now()) @map("created_at")
-  updatedAt  DateTime    @updatedAt @map("updated_at")
-  userId     String?     @map("user_id")
-  comment    String?
-  pickupDate DateTime?   @map("pickup_date")
-  pickupTime String?     @map("pickup_time")
-  files      OrderFile[]
-  user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String      @id @default(cuid())
+  userEmail    String?     @map("user_email")
+  status       OrderStatus @default(PENDING)
+  totalPrice   Float       @map("total_price")
+  options      Json
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  userId       String?     @map("user_id")
+  comment      String?
+  pickupDate   DateTime?   @map("pickup_date")
+  pickupTime   String?     @map("pickup_time")
+  promotionId  String?     @map("promotion_id")
+  discountAmount Float?    @default(0) @map("discount_amount")
+  originalPrice Float?     @map("original_price")
+  files        OrderFile[]
+  items        OrderItem[]
+  user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promotion    Promotion?  @relation(fields: [promotionId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([createdAt])
   @@index([userId])
+  @@index([promotionId])
   @@map("orders")
 }
 
@@ -71,6 +77,125 @@ model PricingConfig {
   @@map("pricing_config")
 }
 
+// ============================================
+// V2: Categories, Products, and Promotions
+// ============================================
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  icon        String?
+  sortOrder   Int       @default(0) @map("sort_order")
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  categoryId  String          @map("category_id")
+  name        String
+  slug        String          @unique
+  description String?
+  basePrice   Float           @map("base_price")
+  active      Boolean         @default(true)
+  sortOrder   Int             @default(0) @map("sort_order")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  category    Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  options     ProductOption[]
+  orderItems  OrderItem[]
+
+  @@index([categoryId])
+  @@index([slug])
+  @@map("products")
+}
+
+model ProductOption {
+  id          String               @id @default(cuid())
+  productId   String               @map("product_id")
+  name        String
+  label       String
+  type        OptionType
+  required    Boolean              @default(false)
+  sortOrder   Int                  @default(0) @map("sort_order")
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+  product     Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values      ProductOptionValue[]
+
+  @@index([productId])
+  @@map("product_options")
+}
+
+model ProductOptionValue {
+  id            String        @id @default(cuid())
+  optionId      String        @map("option_id")
+  label         String
+  value         String
+  priceModifier Float         @default(0) @map("price_modifier")
+  available     Boolean       @default(true)
+  sortOrder     Int           @default(0) @map("sort_order")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  option        ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@index([optionId])
+  @@map("product_option_values")
+}
+
+model OrderItem {
+  id              String   @id @default(cuid())
+  orderId         String   @map("order_id")
+  productId       String   @map("product_id")
+  quantity        Int      @default(1)
+  selectedOptions Json     @map("selected_options") // {optionName: value}
+  unitPrice       Float    @map("unit_price")
+  totalPrice      Float    @map("total_price")
+  createdAt       DateTime @default(now()) @map("created_at")
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Promotion {
+  id            String        @id @default(cuid())
+  name          String
+  title         String?       // Display title (if different from name)
+  subtitle      String?       // Subtitle for display
+  description   String?
+  imageUrl      String?       @map("image_url") // Promotion banner image
+  badgeText     String?       @map("badge_text") // Badge text (e.g., "HOT", "NEW")
+  badgeColor    String?       @map("badge_color") // Badge color (hex)
+  type          PromotionType
+  discountValue Float         @map("discount_value")
+  startDate     DateTime      @map("start_date")
+  endDate       DateTime      @map("end_date")
+  maxUses       Int?          @map("max_uses")
+  currentUses   Int           @default(0) @map("current_uses")
+  active        Boolean       @default(true)
+  priority      Int           @default(0)
+  categoryIds   String[]      @map("category_ids")
+  productIds    String[]      @map("product_ids")
+  minPurchase   Float?        @map("min_purchase")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  orders        Order[]
+
+  @@index([active])
+  @@index([startDate])
+  @@index([endDate])
+  @@map("promotions")
+}
+
 enum OrderStatus {
   PENDING
   PRINTING
@@ -81,4 +206,18 @@ enum OrderStatus {
 enum UserRole {
   USER
   ADMIN
+}
+
+enum OptionType {
+  SELECT
+  RADIO
+  CHECKBOX
+  NUMBER
+  TEXT
+}
+
+enum PromotionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BUNDLE
 }

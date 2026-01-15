@@ -10,7 +10,12 @@ import { OrdersModule } from './orders/orders.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
+import { PromotionsModule } from './promotions/promotions.module';
+import { AdminModule } from './admin/admin.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
 
 @Module({
   imports: [
@@ -27,6 +32,10 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     FilesModule,
     OrdersModule,
     SchedulerModule,
+    CategoriesModule,
+    ProductsModule,
+    PromotionsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
@@ -34,6 +43,10 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard, // Guard global - todos los endpoints requieren auth por defecto
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard, // Roles guard - verifica permisos basados en roles
     },
     {
       provide: APP_GUARD,
