@@ -35,7 +35,7 @@ export default function OrderDetailPage() {
         status: newStatus,
       });
       showToast('Estado actualizado correctamente', 'success');
-    } catch (error) {
+    } catch {
       showToast('Error al actualizar el estado', 'error');
     }
   };

@@ -122,7 +122,7 @@ export default function HomePage() {
         }
         setUploadedFiles([...uploadedFiles, ...uploaded]);
         setSelectedFiles([]);
-      } catch (error) {
+      } catch {
         showToast(
           'Error al subir archivos. Por favor intentá de nuevo.',
           'error',
@@ -149,7 +149,7 @@ export default function HomePage() {
           options,
         );
         setPriceBreakdown(breakdown);
-      } catch (error) {
+      } catch {
         setPriceBreakdown(null);
         showToast(
           'Error al calcular el precio. Por favor intentá de nuevo.',

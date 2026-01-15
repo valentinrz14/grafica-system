@@ -21,16 +21,6 @@ export default function MyOrdersPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Debug logging
-  useEffect(() => {
-    console.log('🔍 MyOrders Auth State:', {
-      isAuthenticated,
-      authLoading,
-      hasUser: !!user,
-      userEmail: user?.email,
-    });
-  }, [isAuthenticated, authLoading, user]);
-
   const {
     data: orders = [],
     isLoading,

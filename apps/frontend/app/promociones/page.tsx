@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Tag, Clock, ArrowLeft, Sparkles } from 'lucide-react';
+import { Tag, ArrowLeft, Sparkles } from 'lucide-react';
 import { CompactCountdownTimer } from '@/components/CountdownTimer/CountdownTimer.component';
 
 interface Promotion {
