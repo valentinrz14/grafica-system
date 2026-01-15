@@ -1,8 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_22", "yarn"]
-
-[phases.install]
-cmds = ["echo 'Skipping npm install, handled by buildCommand'"]
+nixPkgs = ["nodejs", "yarn"]
 
 [start]
 cmd = "yarn start:prod"
