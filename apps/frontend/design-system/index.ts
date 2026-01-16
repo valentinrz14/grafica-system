@@ -1,29 +1,22 @@
 /**
  * Design System - Gráfica System
  *
- * Sistema de diseño completo con componentes reutilizables,
- * tokens de diseño (colores, tipografía, espaciado) y
- * utilidades para construir interfaces consistentes.
+ * Sistema de diseño con componentes reutilizables.
  *
  * @example
  * ```tsx
- * import { Button, Card, colors } from '@/design-system';
+ * import { LoadingSpinner, PasswordInput } from '@/design-system';
  *
  * function MyComponent() {
  *   return (
- *     <Card>
- *       <Button variant="primary">Click me</Button>
- *     </Card>
+ *     <>
+ *       <LoadingSpinner />
+ *       <PasswordInput value={password} onChange={setPassword} />
+ *     </>
  *   );
  * }
  * ```
  */
-
-// Foundations (Design Tokens)
-export * from './foundations/colors';
-export * from './foundations/typography';
-export * from './foundations/spacing';
-export * from './foundations/animations';
 
 // Components
 export * from './components';
