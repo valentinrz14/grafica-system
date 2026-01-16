@@ -55,23 +55,30 @@ export class MailService {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD,
       },
+      // Add timeout to prevent hanging on connection issues
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 5000,
     });
 
-    // Verify connection configuration (only if credentials are set)
+    // Verify connection configuration asynchronously (don't block app startup)
     if (isConfigured) {
-      this.transporter.verify((error) => {
-        if (error) {
-          this.logger.error(
-            '❌ Error configuring email transporter:',
-            error.message,
-          );
-          this.logger.warn(
-            '   Orders will be created, but emails will not be sent.',
-          );
-        } else {
-          this.logger.log('✅ Email transporter configured successfully');
-        }
-      });
+      // Use setTimeout to make this non-blocking
+      setTimeout(() => {
+        this.transporter.verify((error) => {
+          if (error) {
+            this.logger.error(
+              '❌ Error configuring email transporter:',
+              error.message,
+            );
+            this.logger.warn(
+              '   Orders will be created, but emails will not be sent.',
+            );
+          } else {
+            this.logger.log('✅ Email transporter configured successfully');
+          }
+        });
+      }, 0);
     }
   }
 
