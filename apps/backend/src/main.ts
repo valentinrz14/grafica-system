@@ -36,6 +36,9 @@ async function bootstrap() {
   );
 
   const port = process.env.PORT || 4000;
+  console.log(`📍 PORT environment variable: ${process.env.PORT || 'NOT SET'}`);
+  console.log(`📍 Will listen on port: ${port}`);
+
   await app.listen(port, '0.0.0.0');
 
   console.log(`🚀 Backend running on port ${port}`);
