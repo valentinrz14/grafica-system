@@ -105,7 +105,19 @@ class ApiClient {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          // Token expirado o inválido
+          const requestUrl = error.config?.url || '';
+
+          // No redirigir si es el endpoint de login o register (es un error de credenciales/validación)
+          if (
+            requestUrl.includes('/auth/login') ||
+            requestUrl.includes('/auth/register')
+          ) {
+            const message =
+              error.response?.data?.message || 'Email o contraseña incorrectos';
+            return Promise.reject(new Error(message));
+          }
+
+          // Token expirado o inválido - redirigir al login
           if (typeof window !== 'undefined') {
             localStorage.removeItem('auth_token');
             localStorage.removeItem('auth_user');

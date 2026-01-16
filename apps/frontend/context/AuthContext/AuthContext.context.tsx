@@ -58,9 +58,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (email: string, password: string) => {
-      const { user, token } = await apiClient.login({ email, password });
+    async (email: string, password: string): Promise<User> => {
+      const response = await apiClient.login({ email, password });
+
+      if (!response || !response.user || !response.token) {
+        throw new Error('Respuesta de login inválida');
+      }
+
+      const { user, token } = response;
       setAuthData(user, token);
+
+      // Devolver el usuario para que el componente pueda usarlo
+      return user;
     },
     [setAuthData],
   );
