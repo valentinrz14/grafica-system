@@ -9,6 +9,7 @@ import {
   OrderOptions,
   UploadedFile,
   PriceBreakdown,
+  Promotion,
 } from '@/lib/api-client';
 import {
   CheckCircle,
@@ -23,55 +24,26 @@ import {
 import { useToast } from '@/context/ToastContext/ToastContext.context';
 import { useAuth } from '@/context/AuthContext/AuthContext.context';
 import { useCreateOrder } from '@/lib/hooks/use-orders';
+import { usePromotions } from '@/lib/hooks/use-promotions';
 import { MobileMenu } from '@/components/mobile-menu';
 import { CompactCountdownTimer } from '@/components/CountdownTimer/CountdownTimer.component';
-
-interface Promotion {
-  id: string;
-  name: string;
-  title?: string | null;
-  subtitle?: string | null;
-  description?: string | null;
-  imageUrl?: string | null;
-  badgeText?: string | null;
-  badgeColor?: string | null;
-  type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'BUNDLE';
-  discountValue: number;
-  startDate: string;
-  endDate: string;
-  priority: number;
-}
 
 export default function HomePage() {
   const router = useRouter();
   const { showToast } = useToast();
   const { isAuthenticated, user, logout, isLoading: authLoading } = useAuth();
   const createOrder = useCreateOrder();
+  const { data: promotions = [], isLoading: loadingPromotions } =
+    usePromotions();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [loadingPromotions, setLoadingPromotions] = useState(true);
 
   useEffect(() => {
     setIsMounted(true);
-    loadPromotions();
   }, []);
-
-  const loadPromotions = async () => {
-    try {
-      setLoadingPromotions(true);
-      const response = await fetch('http://localhost:4000/promotions');
-      const data = await response.json();
-      setPromotions(data || []);
-    } catch (error) {
-      console.error('Error loading promotions:', error);
-    } finally {
-      setLoadingPromotions(false);
-    }
-  };
 
   const getDiscountText = (promo: Promotion) => {
     if (promo.type === 'PERCENTAGE') {

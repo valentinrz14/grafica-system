@@ -1,4 +1,9 @@
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { Promotion } from '@/types/promotion';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+export type { Promotion };
 
 export interface OrderOptions {
   size: 'A4' | 'A3' | 'CARTA';
@@ -49,235 +54,175 @@ export interface CreateOrderDto {
 }
 
 class ApiClient {
-  private baseUrl: string;
+  private axios: AxiosInstance;
 
   constructor() {
-    this.baseUrl = API_URL;
-  }
+    this.axios = axios.create({
+      baseURL: API_URL,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  private getAuthHeaders(): HeadersInit {
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    return headers;
-  }
-
-  private async handleResponse(response: Response): Promise<any> {
-    if (!response.ok) {
-      // Si es 401, significa que el token expiró o no es válido
-      if (response.status === 401) {
-        // Limpiar el localStorage
+    // Interceptor de solicitudes para agregar el token
+    this.axios.interceptors.request.use(
+      (config) => {
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('auth_user');
-
-          // Redirigir automáticamente al login
-          const currentPath = window.location.pathname;
-          window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+          const token = localStorage.getItem('auth_token');
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
         }
-        // Lanzar error para detener la ejecución
-        throw new Error('AUTH_EXPIRED');
-      }
+        return config;
+      },
+      (error) => Promise.reject(error),
+    );
 
-      const error = await response.json();
-      throw new Error(error.message || 'Request failed');
-    }
+    // Interceptor de respuestas para manejar errores de autenticación
+    this.axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          // Token expirado o inválido
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_user');
 
-    return response.json();
+            const currentPath = window.location.pathname;
+            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+          }
+          return Promise.reject(new Error('AUTH_EXPIRED'));
+        }
+
+        const message =
+          error.response?.data?.message || error.message || 'Request failed';
+        return Promise.reject(new Error(message));
+      },
+    );
   }
 
+  // ============================================
+  // Files
+  // ============================================
   async uploadFile(file: File): Promise<UploadedFile> {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${this.baseUrl}/files/upload`, {
-      method: 'POST',
-      body: formData,
+    const { data } = await this.axios.post('/files/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to upload file');
-    }
-
-    const result = await response.json();
-    return result.data;
+    return data.data;
   }
 
+  // ============================================
+  // Orders
+  // ============================================
   async calculatePrice(
     files: UploadedFile[],
     options: OrderOptions,
   ): Promise<PriceBreakdown> {
-    const response = await fetch(`${this.baseUrl}/orders/calculate-price`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        files: files.map((f) => ({ pages: f.pages })),
-        options,
-      }),
+    const { data } = await this.axios.post('/orders/calculate-price', {
+      files: files.map((f) => ({ pages: f.pages })),
+      options,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to calculate price');
-    }
-
-    const result = await response.json();
-    return result.data;
+    return data.data;
   }
 
   async createOrder(orderData: CreateOrderDto): Promise<Order> {
-    const response = await fetch(`${this.baseUrl}/orders`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(orderData),
-    });
-
-    const result = await this.handleResponse(response);
-    return result.data;
+    const { data } = await this.axios.post('/orders', orderData);
+    return data.data;
   }
 
   async getOrders(): Promise<Order[]> {
-    const url = `${this.baseUrl}/orders`;
-    const response = await fetch(url, {
-      headers: this.getAuthHeaders(),
-    });
-
-    const result = await this.handleResponse(response);
-    return result.data;
+    const { data } = await this.axios.get('/orders');
+    return data.data;
   }
 
   async getMyOrders(): Promise<Order[]> {
-    const url = `${this.baseUrl}/orders/my-orders`;
-    const response = await fetch(url, {
-      headers: this.getAuthHeaders(),
-    });
-
-    const result = await this.handleResponse(response);
-    return result.data;
+    const { data } = await this.axios.get('/orders/my-orders');
+    return data.data;
   }
 
   async getOrder(id: string): Promise<Order> {
-    const response = await fetch(`${this.baseUrl}/orders/${id}`, {
-      headers: this.getAuthHeaders(),
-    });
-
-    const result = await this.handleResponse(response);
-    return result.data;
+    const { data } = await this.axios.get(`/orders/${id}`);
+    return data.data;
   }
 
   async updateOrderStatus(
     id: string,
     status: 'PENDING' | 'PRINTING' | 'DONE' | 'EXPIRED',
   ): Promise<Order> {
-    const response = await fetch(`${this.baseUrl}/orders/${id}/status`, {
-      method: 'PATCH',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify({ status }),
+    const { data } = await this.axios.patch(`/orders/${id}/status`, {
+      status,
     });
-
-    const result = await this.handleResponse(response);
-    return result.data;
+    return data.data;
   }
 
   getFileUrl(fileUrl: string): string {
-    return `${this.baseUrl}${fileUrl}`;
+    return `${API_URL}${fileUrl}`;
+  }
+
+  // ============================================
+  // Promotions (Public)
+  // ============================================
+  async getPromotions(): Promise<Promotion[]> {
+    const { data } = await this.axios.get('/promotions');
+    return data;
   }
 
   // ============================================
   // Admin Promotions Methods
   // ============================================
-
-  async getAllPromotions(): Promise<any[]> {
-    const response = await fetch(`${this.baseUrl}/admin/promotions`, {
-      headers: this.getAuthHeaders(),
-    });
-
-    return this.handleResponse(response);
+  async getAllPromotions(): Promise<Promotion[]> {
+    const { data } = await this.axios.get('/admin/promotions');
+    return data;
   }
 
-  async getPromotionById(id: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/admin/promotions/${id}`, {
-      headers: this.getAuthHeaders(),
-    });
-
-    return this.handleResponse(response);
+  async getPromotionById(id: string): Promise<Promotion> {
+    const { data } = await this.axios.get(`/admin/promotions/${id}`);
+    return data;
   }
 
-  async createPromotion(data: any): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/admin/promotions`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
-
-    return this.handleResponse(response);
+  async createPromotion(data: any): Promise<Promotion> {
+    const { data: response } = await this.axios.post('/admin/promotions', data);
+    return response;
   }
 
-  async updatePromotion(id: string, data: any): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/admin/promotions/${id}`, {
-      method: 'PUT',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
-
-    return this.handleResponse(response);
+  async updatePromotion(id: string, data: any): Promise<Promotion> {
+    const { data: response } = await this.axios.put(
+      `/admin/promotions/${id}`,
+      data,
+    );
+    return response;
   }
 
   async deletePromotion(id: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/admin/promotions/${id}`, {
-      method: 'DELETE',
-      headers: this.getAuthHeaders(),
+    await this.axios.delete(`/admin/promotions/${id}`);
+  }
+
+  async togglePromotionActive(id: string): Promise<Promotion> {
+    const { data } = await this.axios.patch(
+      `/admin/promotions/${id}/toggle-active`,
+    );
+    return data;
+  }
+
+  async renewPromotion(id: string, daysToExtend: number): Promise<Promotion> {
+    const { data } = await this.axios.patch(`/admin/promotions/${id}/renew`, {
+      daysToExtend,
     });
-
-    await this.handleResponse(response);
+    return data;
   }
 
-  async togglePromotionActive(id: string): Promise<any> {
-    const response = await fetch(
-      `${this.baseUrl}/admin/promotions/${id}/toggle-active`,
-      {
-        method: 'PATCH',
-        headers: this.getAuthHeaders(),
-      },
+  async resetPromotionUsage(id: string): Promise<Promotion> {
+    const { data } = await this.axios.patch(
+      `/admin/promotions/${id}/reset-usage`,
     );
-
-    return this.handleResponse(response);
-  }
-
-  async renewPromotion(id: string, daysToExtend: number): Promise<any> {
-    const response = await fetch(
-      `${this.baseUrl}/admin/promotions/${id}/renew`,
-      {
-        method: 'PATCH',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({ daysToExtend }),
-      },
-    );
-
-    return this.handleResponse(response);
-  }
-
-  async resetPromotionUsage(id: string): Promise<any> {
-    const response = await fetch(
-      `${this.baseUrl}/admin/promotions/${id}/reset-usage`,
-      {
-        method: 'PATCH',
-        headers: this.getAuthHeaders(),
-      },
-    );
-
-    return this.handleResponse(response);
+    return data;
   }
 }
 

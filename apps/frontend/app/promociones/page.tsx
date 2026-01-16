@@ -1,47 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Tag, ArrowLeft, Sparkles } from 'lucide-react';
 import { CompactCountdownTimer } from '@/components/CountdownTimer/CountdownTimer.component';
-
-interface Promotion {
-  id: string;
-  name: string;
-  title?: string | null;
-  subtitle?: string | null;
-  description?: string | null;
-  imageUrl?: string | null;
-  badgeText?: string | null;
-  badgeColor?: string | null;
-  type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'BUNDLE';
-  discountValue: number;
-  startDate: string;
-  endDate: string;
-  priority: number;
-}
+import { usePromotions } from '@/lib/hooks/use-promotions';
+import { Promotion } from '@/lib/api-client';
 
 export default function PromotionsPage() {
   const router = useRouter();
-  const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadPromotions();
-  }, []);
-
-  const loadPromotions = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('http://localhost:4000/promotions');
-      const data = await response.json();
-      setPromotions(data || []);
-    } catch (error) {
-      console.error('Error loading promotions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: promotions = [], isLoading: loading } = usePromotions();
 
   const getDiscountText = (promo: Promotion) => {
     if (promo.type === 'PERCENTAGE') {
