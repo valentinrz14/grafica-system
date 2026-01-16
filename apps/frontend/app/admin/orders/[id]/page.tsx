@@ -5,11 +5,14 @@ import { StatusBadge } from '@/components/StatusBadge/StatusBadge.component';
 import { FilePreview } from '@/components/file-preview';
 import { LoadingSpinner } from '@/design-system/components/LoadingSpinner/LoadingSpinner.component';
 import { formatOrderDate } from '@/lib/utils';
-import { ArrowLeft, Mail, Calendar, Package } from 'lucide-react';
+import { Mail, Calendar, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/context/ToastContext/ToastContext.context';
 import { AuthGuard } from '@/components/auth-guard';
 import { useOrder, useUpdateOrderStatus } from '@/lib/hooks/use-orders';
+import { PageHeader } from '@/components/PageHeader/PageHeader.component';
+import { MobileMenu } from '@/components/mobile-menu';
+import { useState } from 'react';
 
 export default function OrderDetailPage() {
   const { showToast } = useToast();
@@ -18,6 +21,7 @@ export default function OrderDetailPage() {
   const orderId = params.id as string;
   const { data: order, isLoading, error } = useOrder(orderId);
   const updateOrderStatus = useUpdateOrderStatus();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (error) {
     showToast('Error al cargar el pedido', 'error');
@@ -45,33 +49,34 @@ export default function OrderDetailPage() {
       {isLoading ? (
         <LoadingSpinner text="Cargando pedido..." fullScreen />
       ) : !order ? null : (
-        <div className="min-h-screen bg-gray-50">
-          {/* Header */}
-          <header className="bg-white border-b border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Volver a pedidos
-              </Link>
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900">
-                    Pedido #{order.id.slice(0, 8)}
-                  </h1>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Creado el {formatOrderDate(order.createdAt)}
-                  </p>
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+          <MobileMenu
+            isOpen={isMobileMenuOpen}
+            onClose={() => setIsMobileMenuOpen(false)}
+          />
+
+          <PageHeader
+            title={`Pedido #${order.id.slice(0, 8)}`}
+            subtitle={`Creado el ${formatOrderDate(order.createdAt)}`}
+            icon={Package}
+            onMenuClick={() => setIsMobileMenuOpen(true)}
+            actions={
+              <>
+                <Link
+                  href="/admin"
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap"
+                >
+                  Volver a pedidos
+                </Link>
+                <div className="ml-2">
+                  <StatusBadge status={order.status} />
                 </div>
-                <StatusBadge status={order.status} />
-              </div>
-            </div>
-          </header>
+              </>
+            }
+          />
 
           {/* Main Content */}
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 w-full">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - Details */}
               <div className="lg:col-span-2 space-y-8">

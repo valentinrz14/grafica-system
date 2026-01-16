@@ -2,15 +2,19 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, ChevronRight, Tag } from 'lucide-react';
+import Link from 'next/link';
+import { Tag } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { PromotionType, type CreatePromotionDto } from '@/types/promotion';
 import { AuthGuard } from '@/components/auth-guard';
+import { PageHeader } from '@/components/PageHeader/PageHeader.component';
+import { MobileMenu } from '@/components/mobile-menu';
 
 export default function CreatePromotionPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [formData, setFormData] = useState<CreatePromotionDto>({
     name: '',
@@ -86,47 +90,36 @@ export default function CreatePromotionPage() {
 
   return (
     <AuthGuard requireAdmin={true}>
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Breadcrumb Navigation */}
-          <div className="mb-6">
-            <nav className="flex items-center gap-2 text-sm flex-wrap">
-              <button
-                onClick={() => router.push('/admin')}
-                className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <Home className="h-4 w-4" />
-                <span>Panel Admin</span>
-              </button>
-              <ChevronRight className="h-4 w-4 text-gray-400" />
-              <button
-                onClick={() => router.push('/admin/promotions')}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Promociones
-              </button>
-              <ChevronRight className="h-4 w-4 text-gray-400" />
-              <span className="text-purple-600 font-medium">
-                Nueva Promoción
-              </span>
-            </nav>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <MobileMenu
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
+        />
 
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-purple-100 p-2 rounded-lg">
-                <Tag className="h-6 w-6 text-purple-600" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Crear Nueva Promoción
-              </h1>
-            </div>
-            <p className="text-gray-600 mt-1">
-              Configura una nueva campaña promocional
-            </p>
-          </div>
+        <PageHeader
+          title="Nueva Promoción"
+          subtitle="Crear una nueva campaña promocional"
+          icon={Tag}
+          onMenuClick={() => setIsMobileMenuOpen(true)}
+          actions={
+            <>
+              <Link
+                href="/admin/promotions"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap"
+              >
+                Volver a Promociones
+              </Link>
+              <Link
+                href="/admin"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap"
+              >
+                Panel Admin
+              </Link>
+            </>
+          }
+        />
 
+        <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 w-full">
           {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800 mb-6">
@@ -543,7 +536,7 @@ export default function CreatePromotionPage() {
               </button>
             </div>
           </form>
-        </div>
+        </main>
       </div>
     </AuthGuard>
   );

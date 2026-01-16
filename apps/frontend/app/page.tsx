@@ -223,12 +223,20 @@ export default function HomePage() {
 
     setIsCreatingOrder(true);
     try {
+      // Parse date in local timezone to match backend validation
+      let formattedPickupDate: string | undefined = undefined;
+      if (pickupDate) {
+        const [year, month, day] = pickupDate.split('-').map(Number);
+        const localDate = new Date(year, month - 1, day, 12, 0, 0); // Noon to avoid timezone issues
+        formattedPickupDate = localDate.toISOString();
+      }
+
       await createOrder.mutateAsync({
         userEmail: user.email,
         options,
         files: uploadedFiles,
         comment: comment.trim() || undefined,
-        pickupDate: pickupDate ? new Date(pickupDate).toISOString() : undefined,
+        pickupDate: formattedPickupDate,
         pickupTime: pickupTime || undefined,
       });
       showToast('¡Pedido creado exitosamente!', 'success');
@@ -259,9 +267,13 @@ export default function HomePage() {
           'warning',
         );
         router.push('/login?redirect=/');
+      } else if (errorMessage.includes('fecha de retiro')) {
+        // Error específico de validación de fecha del backend
+        showToast(errorMessage, 'error');
       } else {
         showToast(
-          'Error al crear el pedido. Por favor intentá de nuevo.',
+          errorMessage ||
+            'Error al crear el pedido. Por favor intentá de nuevo.',
           'error',
         );
       }
@@ -725,6 +737,10 @@ export default function HomePage() {
                             height: '52px',
                           }}
                         />
+                        <p className="mt-2 text-xs text-gray-500 flex items-start gap-1">
+                          <span className="text-blue-600 font-medium">ℹ️</span>
+                          <span>Lunes a sábados, hasta 7 días desde hoy</span>
+                        </p>
                       </div>
 
                       {/* Time Picker */}
@@ -762,9 +778,49 @@ export default function HomePage() {
                             height: '52px',
                           }}
                         />
+                        <p className="mt-2 text-xs text-gray-500 flex items-start gap-1">
+                          <span className="text-blue-600 font-medium">ℹ️</span>
+                          <span>Entre 8:00 AM y 7:00 PM</span>
+                        </p>
                       </div>
                     </div>
                   </div>
+
+                  {/* Validation feedback */}
+                  {!canCreateOrder() && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <p className="text-sm font-medium text-yellow-800 mb-2">
+                        Para enviar el pedido necesitás:
+                      </p>
+                      <ul className="text-xs text-yellow-700 space-y-1">
+                        {!isAuthenticated && (
+                          <li className="flex items-center gap-2">
+                            <span className="text-red-500">✗</span> Iniciar
+                            sesión
+                          </li>
+                        )}
+                        {uploadedFiles.length === 0 && (
+                          <li className="flex items-center gap-2">
+                            <span className="text-red-500">✗</span> Subir al
+                            menos un archivo
+                          </li>
+                        )}
+                        {(!pickupDate || !pickupTime) && (
+                          <li className="flex items-center gap-2">
+                            <span className="text-red-500">✗</span> Completar
+                            fecha y hora de retiro
+                          </li>
+                        )}
+                        {pickupDate && pickupTime && !isPickupValid() && (
+                          <li className="flex items-center gap-2">
+                            <span className="text-red-500">✗</span> Fecha/hora
+                            de retiro inválida (debe ser lunes a sábado, 8 AM -
+                            7 PM, máximo 7 días)
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
 
                   <button
                     onClick={handleCreateOrder}
