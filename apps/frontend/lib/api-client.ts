@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { Promotion } from '@/types/promotion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -142,7 +142,7 @@ class ApiClient {
     const formData = new FormData();
     formData.append('file', file);
 
-    const { data } = await this.axios.post('/files/upload', formData, {
+    const { data } = await this.axios.post('files/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -158,7 +158,7 @@ class ApiClient {
     files: UploadedFile[],
     options: OrderOptions,
   ): Promise<PriceBreakdown> {
-    const { data } = await this.axios.post('/orders/calculate-price', {
+    const { data } = await this.axios.post('orders/calculate-price', {
       files: files.map((f) => ({ pages: f.pages })),
       options,
     });
@@ -167,22 +167,22 @@ class ApiClient {
   }
 
   async createOrder(orderData: CreateOrderDto): Promise<Order> {
-    const { data } = await this.axios.post('/orders', orderData);
+    const { data } = await this.axios.post('orders', orderData);
     return data.data;
   }
 
   async getOrders(): Promise<Order[]> {
-    const { data } = await this.axios.get('/orders');
+    const { data } = await this.axios.get('orders');
     return data.data;
   }
 
   async getMyOrders(): Promise<Order[]> {
-    const { data } = await this.axios.get('/orders/my-orders');
+    const { data } = await this.axios.get('orders/my-orders');
     return data.data;
   }
 
   async getOrder(id: string): Promise<Order> {
-    const { data } = await this.axios.get(`/orders/${id}`);
+    const { data } = await this.axios.get(`orders/${id}`);
     return data.data;
   }
 
@@ -190,7 +190,7 @@ class ApiClient {
     id: string,
     status: 'PENDING' | 'PRINTING' | 'DONE' | 'EXPIRED',
   ): Promise<Order> {
-    const { data } = await this.axios.patch(`/orders/${id}/status`, {
+    const { data } = await this.axios.patch(`orders/${id}/status`, {
       status,
     });
     return data.data;
@@ -204,7 +204,7 @@ class ApiClient {
   // Promotions (Public)
   // ============================================
   async getPromotions(): Promise<Promotion[]> {
-    const { data } = await this.axios.get('/promotions');
+    const { data } = await this.axios.get('promotions');
     return data;
   }
 
@@ -212,41 +212,41 @@ class ApiClient {
   // Admin Promotions Methods
   // ============================================
   async getAllPromotions(): Promise<Promotion[]> {
-    const { data } = await this.axios.get('/admin/promotions');
+    const { data } = await this.axios.get('admin/promotions');
     return data;
   }
 
   async getPromotionById(id: string): Promise<Promotion> {
-    const { data } = await this.axios.get(`/admin/promotions/${id}`);
+    const { data } = await this.axios.get(`admin/promotions/${id}`);
     return data;
   }
 
   async createPromotion(data: any): Promise<Promotion> {
-    const { data: response } = await this.axios.post('/admin/promotions', data);
+    const { data: response } = await this.axios.post('admin/promotions', data);
     return response;
   }
 
   async updatePromotion(id: string, data: any): Promise<Promotion> {
     const { data: response } = await this.axios.put(
-      `/admin/promotions/${id}`,
+      `admin/promotions/${id}`,
       data,
     );
     return response;
   }
 
   async deletePromotion(id: string): Promise<void> {
-    await this.axios.delete(`/admin/promotions/${id}`);
+    await this.axios.delete(`admin/promotions/${id}`);
   }
 
   async togglePromotionActive(id: string): Promise<Promotion> {
     const { data } = await this.axios.patch(
-      `/admin/promotions/${id}/toggle-active`,
+      `admin/promotions/${id}/toggle-active`,
     );
     return data;
   }
 
   async renewPromotion(id: string, daysToExtend: number): Promise<Promotion> {
-    const { data } = await this.axios.patch(`/admin/promotions/${id}/renew`, {
+    const { data } = await this.axios.patch(`admin/promotions/${id}/renew`, {
       daysToExtend,
     });
     return data;
@@ -254,7 +254,7 @@ class ApiClient {
 
   async resetPromotionUsage(id: string): Promise<Promotion> {
     const { data } = await this.axios.patch(
-      `/admin/promotions/${id}/reset-usage`,
+      `admin/promotions/${id}/reset-usage`,
     );
     return data;
   }
@@ -263,12 +263,12 @@ class ApiClient {
   // Authentication Methods
   // ============================================
   async login(credentials: LoginDto): Promise<AuthResponse> {
-    const { data } = await this.axios.post('/auth/login', credentials);
+    const { data } = await this.axios.post('auth/login', credentials);
     return data.data;
   }
 
   async register(userData: RegisterDto): Promise<void> {
-    await this.axios.post('/auth/register', userData);
+    await this.axios.post('auth/register', userData);
   }
 }
 
