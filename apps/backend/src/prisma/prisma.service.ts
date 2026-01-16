@@ -5,8 +5,6 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
 
 @Injectable()
 export class PrismaService
@@ -24,22 +22,15 @@ export class PrismaService
       );
     }
 
-    const pool = new Pool({
-      connectionString,
-      max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
+    super({
+      datasources: {
+        db: {
+          url: connectionString,
+        },
+      },
     });
 
-    pool.on('error', (err: Error) => {
-      console.error('PostgreSQL pool error:', err);
-    });
-
-    const adapter = new PrismaPg(pool);
-
-    super({ adapter });
-
-    this.logger.log('PrismaService initialized with PostgreSQL adapter');
+    this.logger.log('PrismaService initialized');
   }
 
   async onModuleInit() {
