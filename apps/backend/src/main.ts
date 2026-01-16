@@ -8,7 +8,15 @@ import { AppModule } from './app.module';
 config();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
+
+  // Log all incoming requests
+  app.use((req, res, next) => {
+    console.log(`📥 ${req.method} ${req.url} from ${req.ip}`);
+    next();
+  });
 
   // Security headers with helmet
   app.use(helmet());
@@ -35,6 +43,7 @@ async function bootstrap() {
   console.log(
     `   Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`,
   );
+  console.log(`   Listening on: http://0.0.0.0:${port}`);
 
   // Log uncaught exceptions
   process.on('uncaughtException', (error) => {
