@@ -10,7 +10,7 @@ COPY apps/backend/package.json ./apps/backend/
 
 # Install dependencies
 RUN corepack enable && \
-    corepack prepare yarn@stable --activate && \
+    corepack prepare yarn@1 --activate && \
     yarn install --frozen-lockfile
 
 # Stage 2: Builder
