@@ -73,7 +73,7 @@ describe('API Client', () => {
       );
 
       expect((apiClient as any).axios.post).toHaveBeenCalledWith(
-        '/orders/calculate-price',
+        'orders/calculate-price',
         {
           files: [{ pages: 10 }],
           options: {
@@ -112,7 +112,7 @@ describe('API Client', () => {
       const result = await apiClient.uploadFile(mockFile);
 
       expect((apiClient as any).axios.post).toHaveBeenCalledWith(
-        '/files/upload',
+        'files/upload',
         expect.any(FormData),
         {
           headers: {
@@ -152,7 +152,7 @@ describe('API Client', () => {
       // Axios adds the token via interceptor, not directly in the call
       // So we just verify the call was made
       expect((apiClient as any).axios.get).toHaveBeenCalledWith(
-        '/orders/my-orders',
+        'orders/my-orders',
       );
     });
   });
