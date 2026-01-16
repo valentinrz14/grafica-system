@@ -32,10 +32,12 @@ function IsWeekday(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: any) {
-          if (!value) return true; // Optional field
+          if (!value) return true;
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           const date = new Date(value);
-          const dayOfWeek = date.getDay();
+
+          // Get UTC day to avoid timezone issues
+          const dayOfWeek = date.getUTCDay();
 
           // 0 = Sunday, 6 = Saturday. We want 1-6 (Monday-Saturday)
           if (dayOfWeek < 1 || dayOfWeek > 6) {
@@ -43,15 +45,22 @@ function IsWeekday(validationOptions?: ValidationOptions) {
           }
 
           // Check if date is more than 7 days in the future
+          // Use UTC dates to avoid timezone comparison issues
           const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const maxDate = new Date(today);
-          maxDate.setDate(maxDate.getDate() + 7);
+          const todayUTC = Date.UTC(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate(),
+          );
+          const maxDateUTC = todayUTC + 7 * 24 * 60 * 60 * 1000;
 
-          const pickupDate = new Date(date);
-          pickupDate.setHours(0, 0, 0, 0);
+          const pickupDateUTC = Date.UTC(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+          );
 
-          if (pickupDate > maxDate) {
+          if (pickupDateUTC > maxDateUTC) {
             return false;
           }
 

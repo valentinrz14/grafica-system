@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Home, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { Loader2, Tag } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import type { Promotion } from '@/types/promotion';
 import { PromotionStatus } from '@/types/promotion';
 import { AuthGuard } from '@/components/auth-guard';
+import { PageHeader } from '@/components/PageHeader/PageHeader.component';
+import { MobileMenu } from '@/components/mobile-menu';
 
 export default function AdminPromotionsPage() {
   const router = useRouter();
@@ -16,6 +19,7 @@ export default function AdminPromotionsPage() {
   const [filterStatus, setFilterStatus] = useState<PromotionStatus | 'all'>(
     'all',
   );
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -138,49 +142,36 @@ export default function AdminPromotionsPage() {
           </div>
         </div>
       ) : (
-        <div className="min-h-screen bg-gray-50 p-8">
-          <div className="max-w-7xl mx-auto">
-            {/* Breadcrumb Navigation */}
-            <div className="mb-6">
-              <nav className="flex items-center gap-2 text-sm">
-                <button
-                  onClick={() => router.push('/admin')}
-                  className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <Home className="h-4 w-4" />
-                  <span>Panel Admin</span>
-                </button>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
-                <span className="text-purple-600 font-medium">Promociones</span>
-              </nav>
-            </div>
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+          <MobileMenu
+            isOpen={isMobileMenuOpen}
+            onClose={() => setIsMobileMenuOpen(false)}
+          />
 
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Gestión de Promociones
-                </h1>
-                <p className="text-gray-600 mt-1">
-                  Crear, editar y administrar campañas promocionales
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => router.push('/admin')}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+          <PageHeader
+            title="Gestión de Promociones"
+            subtitle="Crear, editar y administrar campañas promocionales"
+            icon={Tag}
+            onMenuClick={() => setIsMobileMenuOpen(true)}
+            actions={
+              <>
+                <Link
+                  href="/admin"
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap"
                 >
                   Volver al Panel
-                </button>
+                </Link>
                 <button
                   onClick={() => router.push('/admin/promotions/create')}
                   className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
                 >
                   + Nueva Promoción
                 </button>
-              </div>
-            </div>
+              </>
+            }
+          />
 
+          <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 w-full">
             {/* Filters */}
             <div className="bg-white rounded-lg shadow p-4 mb-6">
               <div className="flex items-center gap-4">
@@ -381,7 +372,7 @@ export default function AdminPromotionsPage() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </main>
         </div>
       )}
     </AuthGuard>

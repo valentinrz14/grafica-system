@@ -1,14 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Tag, ArrowLeft, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { Tag, Sparkles } from 'lucide-react';
 import { CompactCountdownTimer } from '@/components/CountdownTimer/CountdownTimer.component';
 import { usePromotions } from '@/lib/hooks/use-promotions';
 import { Promotion } from '@/lib/api-client';
+import { PageHeader } from '@/components/PageHeader/PageHeader.component';
+import { MobileMenu } from '@/components/mobile-menu';
 
 export default function PromotionsPage() {
   const router = useRouter();
   const { data: promotions = [], isLoading: loading } = usePromotions();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const getDiscountText = (promo: Promotion) => {
     if (promo.type === 'PERCENTAGE') {
@@ -38,27 +43,30 @@ export default function PromotionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-4 sm:px-6 lg:px-8 py-3">
-          <button
-            onClick={() => router.push('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex flex-col">
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
+
+      <PageHeader
+        title="Promociones"
+        subtitle="Ofertas y descuentos especiales"
+        icon={Tag}
+        onMenuClick={() => setIsMobileMenuOpen(true)}
+        showLogout={false}
+        actions={
+          <Link
+            href="/"
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap"
           >
-            <ArrowLeft className="h-5 w-5" />
-            <span>Volver al inicio</span>
-          </button>
-        </div>
-      </header>
+            Volver al inicio
+          </Link>
+        }
+      />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Título */}
-        <div className="flex items-center gap-3 mb-6">
-          <Tag className="h-7 w-7 text-purple-600" />
-          <h1 className="text-3xl font-bold text-gray-900">Promociones</h1>
-        </div>
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {promotions.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
             <div className="bg-purple-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">

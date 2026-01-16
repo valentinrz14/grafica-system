@@ -41,13 +41,23 @@ export default function LoginForm() {
 
     setIsLoading(true);
     try {
-      await login(email, password);
+      const userData = await login(email, password);
 
       // Esperar un momento para que el token se guarde en localStorage
       await new Promise((resolve) => setTimeout(resolve, 200));
 
+      // Determinar destino según el rol del usuario
+      let destination = redirect;
+      if (userData?.role === 'ADMIN') {
+        // Si es admin, siempre ir al panel admin (ignorar redirect)
+        destination = '/admin';
+      } else if (redirect === '/' || redirect === '/login') {
+        // Si es usuario normal y el redirect es home o login, ir a home
+        destination = '/';
+      }
+
       showToast('¡Inicio de sesión exitoso!', 'success');
-      router.push(redirect);
+      router.push(destination);
     } catch (error) {
       showToast(
         error instanceof Error
