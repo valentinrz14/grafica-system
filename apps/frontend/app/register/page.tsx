@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext/AuthContext.context';
 import { useToast } from '@/context/ToastContext/ToastContext.context';
 import { PasswordInput } from '@/design-system/components/PasswordInput/PasswordInput.component';
 import { UserPlus, Loader2 } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -102,25 +103,13 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/auth/register`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            firstName,
-            lastName,
-            phoneNumber,
-            email,
-            password,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error al registrarse');
-      }
+      await apiClient.register({
+        firstName,
+        lastName,
+        phoneNumber,
+        email,
+        password,
+      });
 
       showToast(
         '¡Cuenta creada exitosamente! Ahora podés iniciar sesión.',

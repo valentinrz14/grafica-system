@@ -8,6 +8,7 @@ import React, {
   useCallback,
 } from 'react';
 import { AuthContextType, User } from './AuthContext.interfaces';
+import { apiClient } from '@/lib/api-client';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -58,22 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string) => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/auth/login`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        },
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error al iniciar sesión');
-      }
-
-      const result = await response.json();
-      const { user, token } = result.data;
+      const { user, token } = await apiClient.login({ email, password });
       setAuthData(user, token);
     },
     [setAuthData],

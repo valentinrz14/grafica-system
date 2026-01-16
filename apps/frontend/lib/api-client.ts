@@ -53,6 +53,28 @@ export interface CreateOrderDto {
   pickupTime?: string;
 }
 
+export interface LoginDto {
+  email: string;
+  password: string;
+}
+
+export interface RegisterDto {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  user: {
+    id: string;
+    email: string;
+    role: 'USER' | 'ADMIN';
+  };
+  token: string;
+}
+
 class ApiClient {
   private axios: AxiosInstance;
 
@@ -223,6 +245,18 @@ class ApiClient {
       `/admin/promotions/${id}/reset-usage`,
     );
     return data;
+  }
+
+  // ============================================
+  // Authentication Methods
+  // ============================================
+  async login(credentials: LoginDto): Promise<AuthResponse> {
+    const { data } = await this.axios.post('/auth/login', credentials);
+    return data.data;
+  }
+
+  async register(userData: RegisterDto): Promise<void> {
+    await this.axios.post('/auth/register', userData);
   }
 }
 
