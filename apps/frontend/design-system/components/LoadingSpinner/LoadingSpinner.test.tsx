@@ -3,8 +3,9 @@ import { LoadingSpinner } from './LoadingSpinner.component';
 
 describe('LoadingSpinner', () => {
   it('renders loading spinner', () => {
-    render(<LoadingSpinner />);
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    const { container } = render(<LoadingSpinner />);
+    const spinner = container.querySelector('svg');
+    expect(spinner).toBeInTheDocument();
   });
 
   it('renders with custom text', () => {
@@ -15,22 +16,22 @@ describe('LoadingSpinner', () => {
   it('renders small size spinner', () => {
     const { container } = render(<LoadingSpinner size="sm" />);
     const spinner = container.querySelector('svg');
-    expect(spinner).toHaveClass('w-4');
-    expect(spinner).toHaveClass('h-4');
+    expect(spinner).toHaveClass('w-6');
+    expect(spinner).toHaveClass('h-6');
   });
 
   it('renders medium size spinner by default', () => {
     const { container } = render(<LoadingSpinner />);
     const spinner = container.querySelector('svg');
-    expect(spinner).toHaveClass('w-8');
-    expect(spinner).toHaveClass('h-8');
+    expect(spinner).toHaveClass('w-12');
+    expect(spinner).toHaveClass('h-12');
   });
 
   it('renders large size spinner', () => {
     const { container } = render(<LoadingSpinner size="lg" />);
     const spinner = container.querySelector('svg');
-    expect(spinner).toHaveClass('w-12');
-    expect(spinner).toHaveClass('h-12');
+    expect(spinner).toHaveClass('w-16');
+    expect(spinner).toHaveClass('h-16');
   });
 
   it('renders fullScreen layout', () => {

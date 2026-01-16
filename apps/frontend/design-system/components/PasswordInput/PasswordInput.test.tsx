@@ -100,8 +100,8 @@ describe('PasswordInput', () => {
         className="custom-class"
       />,
     );
-    const wrapper = container.firstChild;
-    expect(wrapper).toHaveClass('custom-class');
+    const input = container.querySelector('#password');
+    expect(input).toHaveClass('custom-class');
   });
 
   it('has toggle visibility button', () => {
