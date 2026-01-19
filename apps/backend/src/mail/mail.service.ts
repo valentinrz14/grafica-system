@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -27,73 +27,44 @@ export interface OrderEmailData {
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private transporter: nodemailer.Transporter;
+  private resend: Resend | null = null;
+  private isConfigured = false;
 
   constructor() {
-    // Check if email credentials are configured
-    const isConfigured =
-      process.env.GMAIL_USER &&
-      process.env.GMAIL_APP_PASSWORD &&
-      process.env.GMAIL_USER !== 'test@gmail.com' &&
-      process.env.GMAIL_APP_PASSWORD !== 'test-password-placeholder';
+    // Check if Resend API key is configured
+    const apiKey = process.env.RESEND_API_KEY;
 
-    if (!isConfigured) {
+    if (!apiKey || apiKey === 'your-resend-api-key-here') {
       this.logger.warn(
-        '⚠️  Email not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD in .env to enable email notifications.',
+        '⚠️  Email not configured. Set RESEND_API_KEY in .env to enable email notifications.',
       );
       this.logger.warn(
         '   Orders will be created successfully, but confirmation emails will not be sent.',
       );
+      this.isConfigured = false;
+      return;
     }
 
-    // Configure Gmail SMTP transporter
-    this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // TLS
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-      // Add timeout to prevent hanging on connection issues
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 5000,
-    });
-
-    // Verify connection configuration asynchronously (don't block app startup)
-    if (isConfigured) {
-      // Use setTimeout to make this non-blocking
-      setTimeout(() => {
-        this.transporter.verify((error) => {
-          if (error) {
-            this.logger.error(
-              '❌ Error configuring email transporter:',
-              error.message,
-            );
-            this.logger.warn(
-              '   Orders will be created, but emails will not be sent.',
-            );
-          } else {
-            this.logger.log('✅ Email transporter configured successfully');
-          }
-        });
-      }, 0);
+    try {
+      // Initialize Resend client
+      this.resend = new Resend(apiKey);
+      this.isConfigured = true;
+      this.logger.log('✅ Resend email service configured successfully');
+    } catch (error) {
+      this.logger.error('❌ Error initializing Resend:', error);
+      this.logger.warn(
+        '   Orders will be created, but emails will not be sent.',
+      );
+      this.isConfigured = false;
     }
   }
 
   async sendOrderConfirmation(orderData: OrderEmailData): Promise<void> {
     try {
-      // Check if email is configured
-      const isConfigured =
-        process.env.GMAIL_USER &&
-        process.env.GMAIL_APP_PASSWORD &&
-        process.env.GMAIL_USER !== 'test@gmail.com' &&
-        process.env.GMAIL_APP_PASSWORD !== 'test-password-placeholder';
-
-      if (!isConfigured) {
+      // Check if email service is configured
+      if (!this.isConfigured || !this.resend) {
         this.logger.log(
-          `Order ${orderData.orderId} created. Email not sent (credentials not configured).`,
+          `Order ${orderData.orderId} created. Email not sent (Resend not configured).`,
         );
         return;
       }
@@ -104,7 +75,6 @@ export class MailService {
       });
 
       // Read and compile the email template
-      // Use absolute path from project root to ensure template is found
       const templatePath = path.join(
         process.cwd(),
         'src',
@@ -129,16 +99,28 @@ export class MailService {
         frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
       });
 
-      // Send email
+      // Send email via Resend
+      const fromEmail =
+        process.env.MAIL_FROM_ADDRESS || 'onboarding@resend.dev';
+      const fromName = process.env.MAIL_FROM_NAME || 'Gráfica System';
 
-      const info = await this.transporter.sendMail({
-        from: `"${process.env.MAIL_FROM_NAME || 'Gráfica System'}" <${process.env.MAIL_FROM_ADDRESS || process.env.GMAIL_USER}>`,
+      const result = await this.resend.emails.send({
+        from: `${fromName} <${fromEmail}>`,
         to: orderData.userEmail,
         subject: `Confirmación de Pedido #${orderData.orderId.substring(0, 8)}`,
         html,
       });
 
-      this.logger.log(`Order confirmation email sent: ${info.messageId}`);
+      if (result.error) {
+        this.logger.error(
+          'Failed to send order confirmation email:',
+          result.error,
+        );
+      } else {
+        this.logger.log(
+          `✅ Order confirmation email sent successfully (ID: ${result.data?.id})`,
+        );
+      }
     } catch (error) {
       this.logger.error('Failed to send order confirmation email:', error);
       // Don't throw - we don't want email failures to fail order creation

@@ -216,31 +216,100 @@ If a deployment fails:
    npx prisma migrate resolve --rolled-back migration_name
    ```
 
-## Email Configuration (Gmail SMTP)
+## Email Configuration (Resend)
 
-### Setup Gmail App Password
+This application uses **Resend** for email delivery, which works perfectly with Railway (no SMTP port blocking issues).
 
-1. Enable 2-Factor Authentication on your Google Account
-2. Visit: https://myaccount.google.com/apppasswords
-3. Generate app password for "Mail"
-4. Use the 16-character password in `GMAIL_APP_PASSWORD`
+### Setup Resend (Free - 5 minutes)
 
-### SMTP Limitations
+1. **Create Free Account**: Visit https://resend.com
+   - Sign up with GitHub or email
+   - Free tier: 100 emails/day, 3,000 emails/month
 
-- **Railway Restriction**: Outbound SMTP ports (587, 465) may be blocked
-- **Symptom**: "Connection timeout" errors in logs
-- **Impact**: Orders are created successfully, but email notifications fail silently
-- **Alternative**: Consider using SendGrid, AWS SES, or Resend for production
+2. **Get API Key**:
+   - Go to **API Keys** section in dashboard
+   - Click **"Create API Key"**
+   - Give it a name (e.g., "Production Backend")
+   - Copy the generated key (starts with `re_`)
+
+3. **Add to Railway**:
+   - Go to your Railway service → **Variables** tab
+   - Add variable: `RESEND_API_KEY=re_your_key_here`
+   - Railway will auto-redeploy
+
+4. **Configure Sender Email** (Optional):
+   - **Free tier**: Use `onboarding@resend.dev` (no verification needed)
+   - **Custom domain**: Verify your domain in Resend dashboard
+   - Update `MAIL_FROM_ADDRESS` in Railway variables
+
+### Environment Variables
+
+```bash
+# Required
+RESEND_API_KEY="re_abc123xyz..." # From Resend dashboard
+
+# Optional (for customization)
+MAIL_FROM_NAME="Gráfica System" # Display name in emails
+MAIL_FROM_ADDRESS="onboarding@resend.dev" # Use this for free tier
+# MAIL_FROM_ADDRESS="noreply@yourdomain.com" # Or your verified domain
+```
 
 ### Testing Email Delivery
 
-```bash
-curl https://your-backend.up.railway.app/health
-# Then create a test order and check logs for:
-# ✅ Email transporter configured successfully
-# OR
-# ❌ Error configuring email transporter: Connection timeout
+1. **Test in development**:
+
+   ```bash
+   # Create a test order through the app
+   # Check logs for:
+   # ✅ Resend email service configured successfully
+   # ✅ Order confirmation email sent successfully (ID: xxx)
+   ```
+
+2. **Test in production**:
+
+   ```bash
+   # Create an order
+   # Check Railway logs:
+   railway logs | grep "email sent"
+
+   # Or check in Resend dashboard → Emails tab
+   # You'll see delivery status, opens, clicks, etc.
+   ```
+
+### Why Resend over Gmail SMTP?
+
+| Feature              | Gmail SMTP  | Resend         |
+| -------------------- | ----------- | -------------- |
+| **Works on Railway** | ❌ Blocked  | ✅ Yes         |
+| **Free Tier**        | ❌ None     | ✅ 3,000/month |
+| **Setup Time**       | 10 minutes  | 3 minutes      |
+| **Deliverability**   | ⭐⭐⭐      | ⭐⭐⭐⭐⭐     |
+| **Tracking**         | ❌ No       | ✅ Yes         |
+| **API**              | SMTP (slow) | HTTP (fast)    |
+
+### Troubleshooting
+
+**Issue**: Emails not sending
+
+**Check logs for**:
+
 ```
+⚠️  Email not configured. Set RESEND_API_KEY...
+```
+
+**Solution**:
+
+1. Verify `RESEND_API_KEY` is set in Railway variables
+2. Check the key is valid (not expired)
+3. Check Resend dashboard for errors
+
+**Issue**: "Invalid API key"
+
+**Solution**:
+
+1. Regenerate API key in Resend dashboard
+2. Update `RESEND_API_KEY` in Railway
+3. Wait for auto-redeploy
 
 ## Performance Benchmarks
 
