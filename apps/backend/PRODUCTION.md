@@ -216,47 +216,52 @@ If a deployment fails:
    npx prisma migrate resolve --rolled-back migration_name
    ```
 
-## Email Configuration (Mailgun)
+## Email Configuration (SendGrid)
 
-This application uses **Mailgun** for email delivery, which works perfectly with Railway (no SMTP port blocking issues).
+This application uses **SendGrid** for email delivery, which works perfectly with Railway (no SMTP port blocking issues).
 
-### Setup Mailgun (Free - 5 minutes)
+### Setup SendGrid (Free - 3 minutes)
 
-1. **Create Free Account**: Visit https://signup.mailgun.com/new/signup
+1. **Create Free Account**: Visit https://signup.sendgrid.com
    - Sign up with email
-   - Free tier: 5,000 emails/month (no credit card required for first month)
+   - Free tier: 100 emails/day = 3,000 emails/month (forever free, no credit card required)
 
-2. **Get API Key and Domain**:
-   - Go to **Sending** → **Domain settings** in dashboard
-   - Under "Sandbox domains", you'll see your sandbox domain (e.g., `sandbox-abc123.mailgun.org`)
-   - Click on it to see the API key
-   - Copy both the **API key** (starts with `key-`) and the **domain**
+2. **Verify Email**: Check your inbox and verify your SendGrid account
 
-3. **Add Authorized Recipients** (for sandbox domain):
-   - In the domain settings, scroll to "Authorized Recipients"
-   - Add the email addresses you want to test with
-   - Each recipient will receive a verification email
-   - Click the verification link in the email
+3. **Create Sender Identity**:
+   - Go to **Settings** → **Sender Authentication**
+   - Click **"Get Started"** under "Single Sender Verification"
+   - Fill in the form with your details:
+     - From Name: `Gráfica System`
+     - From Email: `grafica.notificaciones@gmail.com` (or any email you own)
+     - Reply To: Same as above
+   - Check your email and click the verification link
 
-4. **Add to Railway**:
+4. **Get API Key**:
+   - Go to **Settings** → **API Keys**
+   - Click **"Create API Key"**
+   - Name: `Production Backend`
+   - Permissions: **Full Access** (or at least "Mail Send")
+   - Click **"Create & View"**
+   - **Copy the API key** (starts with `SG.`) - you won't see it again!
+
+5. **Add to Railway**:
    - Go to your Railway service → **Variables** tab
    - Add variables:
-     - `MAILGUN_API_KEY=key_your_api_key_here`
-     - `MAILGUN_DOMAIN=sandbox-xxx.mailgun.org`
+     - `SENDGRID_API_KEY=SG.your_api_key_here`
      - `MAIL_FROM_NAME=Gráfica System`
-     - `MAIL_FROM_ADDRESS=noreply@sandbox-xxx.mailgun.org`
+     - `MAIL_FROM_ADDRESS=grafica.notificaciones@gmail.com` (your verified email)
    - Railway will auto-redeploy
 
 ### Environment Variables
 
 ```bash
 # Required
-MAILGUN_API_KEY="key_abc123xyz..." # From Mailgun dashboard
-MAILGUN_DOMAIN="sandbox-xxx.mailgun.org" # Your sandbox domain
+SENDGRID_API_KEY="SG.abc123xyz..." # From SendGrid dashboard
 
-# Optional (for customization)
+# Required (must be verified in SendGrid)
 MAIL_FROM_NAME="Gráfica System" # Display name in emails
-MAIL_FROM_ADDRESS="noreply@sandbox-xxx.mailgun.org" # Use your sandbox/verified domain
+MAIL_FROM_ADDRESS="grafica.notificaciones@gmail.com" # Your verified email
 ```
 
 ### Testing Email Delivery
@@ -266,8 +271,8 @@ MAIL_FROM_ADDRESS="noreply@sandbox-xxx.mailgun.org" # Use your sandbox/verified 
    ```bash
    # Create a test order through the app
    # Check logs for:
-   # ✅ Mailgun email service configured successfully
-   # ✅ Order confirmation email sent successfully (ID: xxx)
+   # ✅ SendGrid email service configured successfully
+   # ✅ Order confirmation email sent successfully to user@example.com
    ```
 
 2. **Test in production**:
@@ -277,42 +282,22 @@ MAIL_FROM_ADDRESS="noreply@sandbox-xxx.mailgun.org" # Use your sandbox/verified 
    # Check Railway logs:
    railway logs | grep "email sent"
 
-   # Or check in Mailgun dashboard → Logs tab
+   # Or check in SendGrid dashboard → Activity
    # You'll see delivery status, opens, clicks, etc.
    ```
 
-### Sandbox vs Verified Domain
+### Why SendGrid?
 
-**Sandbox Domain** (Free tier):
-
-- Can send to **authorized recipients only** (must verify each email)
-- Perfect for testing and development
-- No domain verification required
-- Limited to 5,000 emails/month
-
-**Verified Domain** (Production):
-
-- Can send to **any recipient**
-- Requires domain ownership verification
-- Better deliverability
-- Required for production use
-
-To verify a domain:
-
-1. Go to **Sending** → **Domains** → **Add New Domain**
-2. Follow DNS verification steps
-3. Update `MAILGUN_DOMAIN` and `MAIL_FROM_ADDRESS` to use your domain
-
-### Why Mailgun over Gmail SMTP?
-
-| Feature              | Gmail SMTP  | Mailgun        |
-| -------------------- | ----------- | -------------- |
-| **Works on Railway** | ❌ Blocked  | ✅ Yes         |
-| **Free Tier**        | ❌ None     | ✅ 5,000/month |
-| **Setup Time**       | 10 minutes  | 5 minutes      |
-| **Deliverability**   | ⭐⭐⭐      | ⭐⭐⭐⭐⭐     |
-| **Tracking**         | ❌ No       | ✅ Yes         |
-| **API**              | SMTP (slow) | HTTP (fast)    |
+| Feature                  | Gmail SMTP | SendGrid       |
+| ------------------------ | ---------- | -------------- |
+| **Works on Railway**     | ❌ Blocked | ✅ Yes         |
+| **Free Tier**            | ❌ None    | ✅ 3,000/month |
+| **Setup Time**           | 10 minutes | 3 minutes      |
+| **Domain Required**      | ✅ Yes     | ❌ No          |
+| **Authorize Recipients** | ✅ Yes     | ❌ No          |
+| **Deliverability**       | ⭐⭐⭐     | ⭐⭐⭐⭐⭐     |
+| **Tracking**             | ❌ No      | ✅ Yes         |
+| **API**                  | SMTP       | HTTP (fast)    |
 
 ### Troubleshooting
 
@@ -321,28 +306,35 @@ To verify a domain:
 **Check logs for**:
 
 ```
-⚠️  Email not configured. Set MAILGUN_API_KEY...
+⚠️  Email not configured. Set SENDGRID_API_KEY...
 ```
 
 **Solution**:
 
-1. Verify `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` are set in Railway variables
-2. Check the API key is valid (starts with `key-`)
-3. Check Mailgun dashboard → Logs for errors
+1. Verify `SENDGRID_API_KEY` is set in Railway variables
+2. Check the API key is valid (starts with `SG.`)
+3. Check SendGrid dashboard → Activity for errors
 
-**Issue**: "Forbidden: sandbox domain only allows authorized recipients"
+**Issue**: "The from address does not match a verified Sender Identity"
 
 **Solution**:
 
-1. Go to Mailgun dashboard → Your sandbox domain
-2. Scroll to "Authorized Recipients"
-3. Add the recipient email address
-4. Verify the email (click link sent to recipient)
+1. Go to SendGrid dashboard → **Settings** → **Sender Authentication**
+2. Under "Single Sender Verification", make sure your email is verified
+3. Use the EXACT same email in `MAIL_FROM_ADDRESS`
+4. Check your email for verification link if not yet verified
 
-OR:
+**Issue**: Emails going to spam
 
-1. Verify your own domain in Mailgun
-2. Update `MAILGUN_DOMAIN` and `MAIL_FROM_ADDRESS` to use your domain
+**Solutions**:
+
+1. Make sure sender email is verified in SendGrid
+2. Use a professional email domain (not @gmail.com if possible)
+3. Verify domain with SPF/DKIM in SendGrid (Settings → Sender Authentication → Authenticate Your Domain)
+4. Warm up sending: start with low volume, increase gradually
+5. Include unsubscribe link in email footer
+
+6. Update `MAILGUN_DOMAIN` and `MAIL_FROM_ADDRESS` to use your domain
 
 ## Performance Benchmarks
 
