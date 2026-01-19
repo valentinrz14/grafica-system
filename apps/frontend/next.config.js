@@ -11,6 +11,7 @@ const nextConfig = {
       // Ensure resolve.alias exists
       config.resolve.alias = config.resolve.alias || {};
       config.resolve.alias.canvas = false;
+      config.resolve.alias['pdfjs-dist/build/pdf.worker.entry'] = false;
 
       // Add fallbacks for node modules
       config.resolve.fallback = {
@@ -18,16 +19,20 @@ const nextConfig = {
         canvas: false,
         fs: false,
         path: false,
+        stream: false,
+        zlib: false,
+        http: false,
+        https: false,
+        url: false,
       };
-
-      // Externalize canvas module
-      if (!config.externals) {
-        config.externals = [];
-      }
-      if (Array.isArray(config.externals)) {
-        config.externals.push('canvas');
-      }
     }
+
+    // Mark canvas as external for both server and client
+    const externals = config.externals || [];
+    config.externals = Array.isArray(externals)
+      ? [...externals, 'canvas']
+      : [externals, 'canvas'];
+
     return config;
   },
 };

@@ -137,7 +137,7 @@ export default function HomePage() {
       if (!file.type.includes('pdf')) return 1;
 
       try {
-        const pdfjs = await import('pdfjs-dist');
+        const pdfjs = await import(/* webpackMode: "lazy" */ 'pdfjs-dist');
         pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 
         const arrayBuffer = await file.arrayBuffer();
