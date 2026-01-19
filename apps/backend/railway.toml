@@ -1,9 +1,17 @@
+# Railway Configuration for Production Deployment
+# Documentation: https://docs.railway.com/reference/config-as-code
+
 [build]
 builder = "RAILPACK"
 
 [deploy]
+# Run database migrations before starting the application
 startCommand = "npx prisma migrate deploy && node dist/main"
+
+# Health check endpoint (must return 2xx status)
 healthcheckPath = "/health"
 healthcheckTimeout = 300
+
+# Restart policy: restart on crashes, up to 10 attempts
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10

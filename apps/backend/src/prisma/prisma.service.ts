@@ -15,6 +15,7 @@ export class PrismaService
 
   constructor() {
     const connectionString = process.env.DATABASE_URL;
+    const isProduction = process.env.NODE_ENV === 'production';
 
     if (!connectionString) {
       throw new Error(
@@ -28,6 +29,10 @@ export class PrismaService
           url: connectionString,
         },
       },
+      log: isProduction
+        ? ['error', 'warn']
+        : ['query', 'info', 'warn', 'error'],
+      errorFormat: isProduction ? 'minimal' : 'pretty',
     });
 
     this.logger.log('PrismaService initialized');
@@ -44,7 +49,18 @@ export class PrismaService
   }
 
   async onModuleDestroy() {
+    try {
+      await this.$disconnect();
+      this.logger.log('Database connection closed gracefully');
+    } catch (error) {
+      this.logger.error('Error closing database connection:', error);
+    }
+  }
+
+  /**
+   * Clean disconnection helper for tests and graceful shutdown
+   */
+  async cleanupConnection() {
     await this.$disconnect();
-    this.logger.log('Database connection closed');
   }
 }

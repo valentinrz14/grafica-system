@@ -1,62 +1,96 @@
 import { config } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger, LogLevel } from '@nestjs/common';
 import helmet from 'helmet';
+import compression from 'compression';
 import { AppModule } from './app.module';
 
 // Load environment variables before bootstrapping
 config();
 
 async function bootstrap() {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const logger = new Logger('Bootstrap');
+
+  // Configure logger levels based on environment
+  const logLevels: LogLevel[] = isProduction
+    ? ['log', 'error', 'warn']
+    : ['log', 'error', 'warn', 'debug', 'verbose'];
+
   const app = await NestFactory.create(AppModule, {
-    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+    logger: logLevels,
   });
 
-  // Log all incoming requests
-  app.use((req, res, next) => {
-    console.log(`📥 ${req.method} ${req.url} from ${req.ip}`);
-    next();
-  });
+  // Enable compression for responses
+  app.use(compression());
 
   // Security headers with helmet
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: isProduction ? undefined : false,
+      crossOriginEmbedderPolicy: isProduction ? undefined : false,
+    }),
+  );
 
   // Enable CORS for frontend
+  const allowedOrigins = process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
+    : ['http://localhost:3000'];
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: allowedOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  // Enable global validation
+  // Enable global validation with security best practices
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       whitelist: true,
+      forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
   const port = process.env.PORT || 4000;
-  console.log(`📍 PORT environment variable: ${process.env.PORT || 'NOT SET'}`);
-  console.log(`📍 Will listen on port: ${port}`);
 
   await app.listen(port, '0.0.0.0');
 
-  console.log(`🚀 Backend running on port ${port}`);
-  console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(
-    `   Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`,
-  );
-  console.log(`   Listening on: http://0.0.0.0:${port}`);
+  logger.log(`🚀 Application is running on: http://0.0.0.0:${port}`);
+  logger.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
 
-  // Log uncaught exceptions
+  // Graceful shutdown handlers
+  const gracefulShutdown = (signal: string) => {
+    logger.log(`${signal} received. Starting graceful shutdown...`);
+    app
+      .close()
+      .then(() => {
+        logger.log('✅ Application closed successfully');
+        process.exit(0);
+      })
+      .catch((error) => {
+        logger.error('❌ Error during shutdown:', error);
+        process.exit(1);
+      });
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+  // Global error handlers
   process.on('uncaughtException', (error) => {
-    console.error('❌ Uncaught Exception:', error);
+    logger.error('❌ Uncaught Exception:', error);
     process.exit(1);
   });
 
   process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    logger.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
     process.exit(1);
   });
 }
+
 void bootstrap();
