@@ -18,6 +18,7 @@ export interface UploadedFile {
   originalName: string;
   fileUrl: string;
   pages: number;
+  mimeType?: string;
 }
 
 export interface PriceBreakdown {

@@ -2,7 +2,7 @@ export interface CalculatePriceOptions {
   pages: number;
   isColor: boolean;
   isDuplex: boolean;
-  quantity: number;
+  quantity?: number; // Opcional, siempre será 1
 }
 
 export interface PriceBreakdown {

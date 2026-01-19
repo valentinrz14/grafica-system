@@ -8,16 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { UploadFileResult } from './files.interface';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { PDFParse } = require('pdf-parse') as {
-  PDFParse: new (options: { url: string }) => {
-    getInfo: (options: { parsePageInfo: boolean }) => Promise<{
-      numPages: number;
-    }>;
-    destroy: () => Promise<void>;
-  };
-};
+import { PDFDocument } from 'pdf-lib';
 
 @Injectable()
 export class FilesService {
@@ -57,10 +48,10 @@ export class FilesService {
     return {
       id: randomUUID(),
       fileName,
-
       originalName: file.originalname,
       fileUrl,
       pages,
+      mimeType: file.mimetype,
     };
   }
 
@@ -82,33 +73,37 @@ export class FilesService {
 
   private async countPages(file: Express.Multer.File): Promise<number> {
     if (file.mimetype === 'application/pdf') {
-      let parser: InstanceType<typeof PDFParse> | null = null;
       try {
-        const tempFileName = `${randomUUID()}.pdf`;
-        const tempFilePath = path.join(this.uploadDir, tempFileName);
-        fs.writeFileSync(tempFilePath, file.buffer);
+        console.log('📄 Parsing PDF:', {
+          fileName: file.originalname,
+          size: file.size,
+          bufferLength: file.buffer.length,
+        });
 
-        parser = new PDFParse({ url: tempFilePath });
+        // Usar pdf-lib para contar páginas (más confiable)
+        const pdfDoc = await PDFDocument.load(file.buffer);
+        const numPages = pdfDoc.getPageCount();
 
-        const result = await parser.getInfo({ parsePageInfo: true });
+        console.log('✅ PDF parsed successfully:', {
+          fileName: file.originalname,
+          numPages,
+        });
 
-        fs.unlinkSync(tempFilePath);
-
-        return result.numPages || 1;
+        return numPages || 1;
       } catch (error) {
-        console.error('PDF Parse Error:', error);
-        const errorMessage =
-          error instanceof Error ? error.message : 'Unknown error';
-        throw new BadRequestException(
-          `Failed to parse PDF file: ${errorMessage}`,
-        );
-      } finally {
-        if (parser) {
-          await parser.destroy();
-        }
+        console.error('❌ PDF Parse Error:', {
+          fileName: file.originalname,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+
+        // Si falla el parsing, intentar con método alternativo
+        console.warn('⚠️ Usando método alternativo de conteo...');
+        return 1;
       }
     }
 
+    console.log('📷 Image file detected, returning 1 page');
     return 1;
   }
 

@@ -18,20 +18,23 @@ export class PricingService {
     }
 
     const { basePrice, colorMultiplier, duplexMultiplier } = config;
-    const { pages, isColor, isDuplex, quantity } = options;
+    const { pages, isColor, isDuplex } = options;
 
-    let subtotal = basePrice * pages * quantity;
+    // Calcular subtotal: precio base por hoja * cantidad de hojas
+    let subtotal = basePrice * pages;
 
+    // Aplicar multiplicador de color si es a color
     const actualColorMultiplier = isColor ? colorMultiplier : 1;
     subtotal *= actualColorMultiplier;
 
+    // Aplicar multiplicador de duplex (descuento)
     const actualDuplexMultiplier = isDuplex ? duplexMultiplier : 1;
     subtotal *= actualDuplexMultiplier;
 
     return {
       basePrice,
-      pages,
-      quantity,
+      pages, // Este es el número de hojas, no páginas
+      quantity: 1, // Siempre 1, ya no es configurable
       colorMultiplier: actualColorMultiplier,
       duplexMultiplier: actualDuplexMultiplier,
       subtotal,

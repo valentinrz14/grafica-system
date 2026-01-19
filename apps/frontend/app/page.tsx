@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { UploadForm } from '@/components/UploadForm/UploadForm.component';
 import { PriceCalculator } from '@/components/PriceCalculator/PriceCalculator.component';
 import {
@@ -27,6 +28,40 @@ import { useCreateOrder } from '@/lib/hooks/use-orders';
 import { usePromotions } from '@/lib/hooks/use-promotions';
 import { MobileMenu } from '@/components/mobile-menu';
 import { CompactCountdownTimer } from '@/components/CountdownTimer/CountdownTimer.component';
+
+const FilePreview = dynamic(
+  () =>
+    import('@/components/FilePreview/FilePreview.component').then((mod) => ({
+      default: mod.FilePreview,
+    })),
+  { ssr: false },
+);
+
+const PDFViewer = dynamic(
+  () =>
+    import('@/components/PDFViewer/PDFViewer.component').then((mod) => ({
+      default: mod.PDFViewer,
+    })),
+  { ssr: false },
+);
+
+const PDFModal = dynamic(
+  () =>
+    import('@/components/PDFModal/PDFModal.component').then((mod) => ({
+      default: mod.PDFModal,
+    })),
+  { ssr: false },
+);
+
+const CopiesSelector = dynamic(
+  () =>
+    import('@/components/CopiesSelector/CopiesSelector.component').then(
+      (mod) => ({
+        default: mod.CopiesSelector,
+      }),
+    ),
+  { ssr: false },
+);
 
 export default function HomePage() {
   const router = useRouter();
@@ -80,8 +115,40 @@ export default function HomePage() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [selectedPdfFile, setSelectedPdfFile] = useState<UploadedFile | null>(
+    null,
+  );
+  const [copiesConfig, setCopiesConfig] = useState<{
+    mode: 'document' | 'individual';
+    documentCopies?: number;
+    pageCopies?: Array<{
+      pageNumber: number;
+      copies: number;
+      included: boolean;
+    }>;
+  }>({
+    mode: 'document',
+    documentCopies: 1,
+  });
 
   useEffect(() => {
+    const countPDFPages = async (file: File): Promise<number> => {
+      if (!file.type.includes('pdf')) return 1;
+
+      try {
+        const pdfjs = await import('pdfjs-dist');
+        pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+        return pdf.numPages;
+      } catch (error) {
+        console.error('Error counting PDF pages in frontend:', error);
+        return 1;
+      }
+    };
+
     const uploadFiles = async () => {
       if (selectedFiles.length === 0) return;
 
@@ -89,7 +156,26 @@ export default function HomePage() {
       try {
         const uploaded: UploadedFile[] = [];
         for (const file of selectedFiles) {
+          // Primero contar las páginas en el frontend
+          const frontendPageCount = await countPDFPages(file);
+          console.log('📊 Frontend detectó páginas:', {
+            fileName: file.name,
+            pages: frontendPageCount,
+          });
+
+          // Subir al backend
           const result = await apiClient.uploadFile(file);
+
+          // Si el backend detectó mal, usar el conteo del frontend
+          if (result.pages !== frontendPageCount) {
+            console.warn(
+              '⚠️ Discrepancia en conteo de páginas:',
+              `Backend: ${result.pages}, Frontend: ${frontendPageCount}`,
+            );
+            console.log('✅ Usando conteo del frontend:', frontendPageCount);
+            result.pages = frontendPageCount;
+          }
+
           uploaded.push(result);
         }
         setUploadedFiles([...uploadedFiles, ...uploaded]);
@@ -114,12 +200,31 @@ export default function HomePage() {
         return;
       }
 
+      const totalPagesWithCopies = getTotalPagesWithCopies();
+      console.log('🔢 Debug - Cálculo de precio:', {
+        files: uploadedFiles.map((f) => ({
+          name: f.originalName,
+          pages: f.pages,
+        })),
+        copiesConfig,
+        totalPagesWithCopies,
+        options,
+      });
+
       setIsCalculating(true);
       try {
+        const virtualFile: UploadedFile = {
+          id: 'virtual',
+          fileName: 'combined',
+          originalName: 'combined',
+          fileUrl: '',
+          pages: totalPagesWithCopies,
+        };
         const breakdown = await apiClient.calculatePrice(
-          uploadedFiles,
+          [virtualFile],
           options,
         );
+        console.log('💰 Debug - Respuesta del backend:', breakdown);
         setPriceBreakdown(breakdown);
       } catch {
         setPriceBreakdown(null);
@@ -133,10 +238,28 @@ export default function HomePage() {
     };
 
     calculatePrice();
-  }, [uploadedFiles, options]);
+  }, [uploadedFiles, options, copiesConfig]);
 
   const handleRemoveFile = (index: number) => {
     setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
+  };
+
+  // Calcular total de páginas incluyendo copias
+  const getTotalPagesWithCopies = () => {
+    const baseTotalPages = uploadedFiles.reduce(
+      (sum, file) => sum + file.pages,
+      0,
+    );
+
+    if (copiesConfig.mode === 'document') {
+      return baseTotalPages * (copiesConfig.documentCopies || 1);
+    } else if (copiesConfig.mode === 'individual' && copiesConfig.pageCopies) {
+      return copiesConfig.pageCopies
+        .filter((pc) => pc.included)
+        .reduce((sum, pc) => sum + pc.copies, 0);
+    }
+
+    return baseTotalPages;
   };
 
   const handleLogout = () => {
@@ -439,18 +562,28 @@ export default function HomePage() {
                   onClick={() => router.push('/promociones')}
                   className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 text-left"
                 >
-                  {promo.imageUrl && (
-                    <div className="relative h-40 w-full">
+                  <div className="relative h-40 w-full">
+                    {promo.imageUrl ? (
                       <img
                         src={promo.imageUrl}
                         alt={promo.title || promo.name}
                         className="w-full h-full object-cover"
                       />
-                      <span className="absolute top-3 right-3 text-xs font-bold text-white bg-purple-600 px-3 py-1.5 rounded-lg shadow-lg">
-                        {getDiscountText(promo)}
-                      </span>
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center">
+                        <Tag className="h-16 w-16 text-white opacity-30" />
+                      </div>
+                    )}
+                    <div className="absolute top-3 right-3">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur-sm opacity-75 animate-pulse"></div>
+                        <span className="relative text-xs font-black text-white bg-gradient-to-r from-yellow-500 to-orange-600 px-4 py-2 rounded-full shadow-2xl border-2 border-white/30 flex items-center gap-1">
+                          <span className="text-lg">🔥</span>
+                          {getDiscountText(promo)}
+                        </span>
+                      </div>
                     </div>
-                  )}
+                  </div>
                   <div className="p-4">
                     <h4 className="text-sm font-bold text-gray-900 mb-2">
                       {promo.title || promo.name}
@@ -573,22 +706,15 @@ export default function HomePage() {
                         className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg hover:shadow-md transition-shadow animate-slideIn"
                         style={{ animationDelay: `${index * 0.1}s` }}
                       >
-                        <div className="flex items-center gap-3">
-                          <svg
-                            className="h-6 w-6 text-green-600 flex-shrink-0"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                          </svg>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <FilePreview
+                            fileUrl={apiClient.getFileUrl(file.fileUrl)}
+                            fileName={file.fileName}
+                            mimeType={file.mimeType}
+                            pages={file.pages}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
                               {file.originalName}
                             </p>
                             <p className="text-xs text-gray-500">
@@ -597,14 +723,57 @@ export default function HomePage() {
                             </p>
                           </div>
                         </div>
-                        <button
-                          onClick={() => handleRemoveFile(index)}
-                          className="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-1 rounded hover:bg-red-50 transition-colors"
-                        >
-                          Eliminar
-                        </button>
+                        <div className="flex items-center gap-2">
+                          {(file.mimeType?.includes('pdf') ||
+                            file.fileName.toLowerCase().endsWith('.pdf')) && (
+                            <button
+                              onClick={() => {
+                                setSelectedPdfFile(file);
+                                setPdfModalOpen(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-700 text-sm font-medium px-3 py-1 rounded hover:bg-blue-50 transition-colors"
+                            >
+                              Ver PDF
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleRemoveFile(index)}
+                            className="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-1 rounded hover:bg-red-50 transition-colors"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Selector de copias */}
+                  <div className="mt-6">
+                    <CopiesSelector
+                      totalPages={uploadedFiles.reduce(
+                        (sum, file) => sum + file.pages,
+                        0,
+                      )}
+                      onCopiesChange={(config) => {
+                        console.log('🔄 Configuración de copias:', config);
+                        setCopiesConfig(config);
+                      }}
+                      onPreviewPage={(pageNumber) => {
+                        // Encontrar el archivo que contiene esta página
+                        let currentPage = 0;
+                        for (const file of uploadedFiles) {
+                          if (
+                            pageNumber > currentPage &&
+                            pageNumber <= currentPage + file.pages
+                          ) {
+                            setSelectedPdfFile(file);
+                            setPdfModalOpen(true);
+                            break;
+                          }
+                          currentPage += file.pages;
+                        }
+                      }}
+                    />
                   </div>
                 </div>
               )}
@@ -622,6 +791,7 @@ export default function HomePage() {
                 onOptionsChange={setOptions}
                 priceBreakdown={priceBreakdown}
                 isCalculating={isCalculating}
+                totalPages={getTotalPagesWithCopies()}
               />
             </div>
 
@@ -853,6 +1023,24 @@ export default function HomePage() {
           </p>
         </div>
       </footer>
+
+      {/* PDF Preview Modal */}
+      {selectedPdfFile && (
+        <PDFModal
+          isOpen={pdfModalOpen}
+          onClose={() => {
+            setPdfModalOpen(false);
+            setSelectedPdfFile(null);
+          }}
+          fileUrl={apiClient.getFileUrl(selectedPdfFile.fileUrl)}
+          fileName={selectedPdfFile.originalName}
+        >
+          <PDFViewer
+            fileUrl={apiClient.getFileUrl(selectedPdfFile.fileUrl)}
+            fileName={selectedPdfFile.originalName}
+          />
+        </PDFModal>
+      )}
     </div>
   );
 }

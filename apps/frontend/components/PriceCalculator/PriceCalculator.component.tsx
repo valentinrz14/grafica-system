@@ -15,72 +15,118 @@ export function PriceCalculator({
   onOptionsChange,
   priceBreakdown,
   isCalculating,
+  totalPages,
 }: PriceCalculatorProps) {
   const handleChange = (field: keyof OrderOptions, value: any) => {
     onOptionsChange({ ...options, [field]: value });
   };
 
+  // Calcular hojas necesarias según formato y duplex
+  const calculateSheets = (): number => {
+    if (totalPages === 0) return 0;
+
+    // A3 puede contener 2 páginas A4, A4 y CARTA contienen 1 página
+    const pagesPerSheet = options.size === 'A3' ? 2 : 1;
+
+    // Duplex permite imprimir en ambos lados de la hoja
+    const sidesPerSheet = options.isDuplex ? 2 : 1;
+
+    // Calcular hojas necesarias y redondear hacia arriba
+    const result = Math.ceil(totalPages / pagesPerSheet / sidesPerSheet);
+
+    // Debug temporal
+    console.log('📄 Cálculo de hojas:', {
+      totalPages,
+      pagesPerSheet,
+      sidesPerSheet,
+      size: options.size,
+      isDuplex: options.isDuplex,
+      result,
+    });
+
+    return result;
+  };
+
+  const sheetsNeeded = calculateSheets();
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Tamaño */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tamaño del papel
-          </label>
-          <Select
-            value={options.size}
-            onValueChange={(value) => handleChange('size', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar tamaño" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="A4">A4 (21 x 29.7 cm)</SelectItem>
-              <SelectItem value="A3">A3 (29.7 x 42 cm)</SelectItem>
-              <SelectItem value="CARTA">Carta (21.6 x 27.9 cm)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Cantidad */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Cantidad de copias
-          </label>
-          <input
-            type="number"
-            min="1"
-            max="1000"
-            value={options.quantity}
-            onChange={(e) => {
-              const value = e.target.value;
-              // Allow empty string or valid numbers while typing
-              if (value === '') {
-                return; // Don't update state, allow empty temporarily
-              }
-              const numValue = parseInt(value);
-              if (!isNaN(numValue) && numValue >= 1 && numValue <= 1000) {
-                handleChange('quantity', numValue);
-              }
-            }}
-            onBlur={(e) => {
-              // Ensure valid value on blur
-              const value = parseInt(e.target.value);
-              if (isNaN(value) || value < 1) {
-                handleChange('quantity', 1);
-              }
-            }}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
-            style={{
-              fontSize: '16px',
-              height: '52px',
-              fontFamily:
-                'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-            }}
-          />
-        </div>
+      {/* Tamaño del papel */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Tamaño del papel
+        </label>
+        <Select
+          value={options.size}
+          onValueChange={(value) => handleChange('size', value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Seleccionar tamaño" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="A4">A4 (21 x 29.7 cm)</SelectItem>
+            <SelectItem value="A3">A3 (29.7 x 42 cm)</SelectItem>
+            <SelectItem value="CARTA">Carta (21.6 x 27.9 cm)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
+
+      {/* Hojas a imprimir - Read-only calculated field */}
+      {totalPages > 0 && (
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg
+                className="h-5 w-5 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">
+                  Hojas a imprimir
+                </p>
+                <p className="text-xs text-gray-600">
+                  Calculado según formato y duplex
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-green-600">
+                {sheetsNeeded}
+              </p>
+              <p className="text-xs text-gray-500">
+                {sheetsNeeded === 1 ? 'hoja' : 'hojas'}
+              </p>
+            </div>
+          </div>
+          {totalPages > 0 && (
+            <div className="mt-2 pt-2 border-t border-green-200">
+              <p className="text-xs text-gray-600">
+                📄 {totalPages} {totalPages === 1 ? 'página' : 'páginas'} del
+                PDF
+                {options.size === 'A3' && (
+                  <span className="ml-1 text-green-700 font-medium">
+                    → en formato A3 (2 páginas por hoja)
+                  </span>
+                )}
+                {options.isDuplex && (
+                  <span className="ml-1 text-blue-700 font-medium">
+                    → impresión doble faz
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Color */}
@@ -207,21 +253,15 @@ export function PriceCalculator({
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between py-1">
-              <span className="text-gray-700">Precio base por página:</span>
+              <span className="text-gray-700">Precio base por hoja:</span>
               <span className="font-semibold text-gray-900">
                 ${priceBreakdown.basePrice}
               </span>
             </div>
             <div className="flex justify-between py-1">
-              <span className="text-gray-700">Total de páginas:</span>
+              <span className="text-gray-700">Total de hojas:</span>
               <span className="font-semibold text-gray-900">
                 {priceBreakdown.pages}
-              </span>
-            </div>
-            <div className="flex justify-between py-1">
-              <span className="text-gray-700">Cantidad de copias:</span>
-              <span className="font-semibold text-gray-900">
-                {priceBreakdown.quantity}
               </span>
             </div>
             {priceBreakdown.colorMultiplier > 1 && (

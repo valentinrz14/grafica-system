@@ -4,4 +4,5 @@ export interface UploadFileResult {
   originalName: string;
   fileUrl: string;
   pages: number;
+  mimeType?: string;
 }

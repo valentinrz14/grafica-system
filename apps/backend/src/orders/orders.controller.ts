@@ -86,7 +86,12 @@ export class OrdersController {
     @Body(new ValidationPipe())
     body: {
       files: { pages: number }[];
-      options: { isColor: boolean; isDuplex: boolean; quantity: number };
+      options: {
+        isColor: boolean;
+        isDuplex: boolean;
+        quantity: number;
+        size: string;
+      };
     },
   ) {
     const priceBreakdown = await this.ordersService.calculatePrice(

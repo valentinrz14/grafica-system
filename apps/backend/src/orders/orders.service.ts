@@ -18,13 +18,20 @@ export class OrdersService {
     const { userEmail, options, files, comment, pickupDate, pickupTime } =
       createOrderDto;
 
+    // Calcular total de páginas
     const totalPages = files.reduce((sum, file) => sum + file.pages, 0);
 
+    // Calcular hojas necesarias según formato y duplex
+    const sheetsNeeded = this.calculateSheets(
+      totalPages,
+      options.size,
+      options.isDuplex,
+    );
+
     const priceBreakdown = await this.pricingService.calculatePrice({
-      pages: totalPages,
+      pages: sheetsNeeded, // Usar hojas en vez de páginas
       isColor: options.isColor,
       isDuplex: options.isDuplex,
-      quantity: options.quantity,
     });
 
     const order = await this.prisma.order.create({
@@ -164,17 +171,64 @@ export class OrdersService {
 
   async calculatePrice(
     files: { pages: number }[],
-    options: { isColor: boolean; isDuplex: boolean; quantity: number },
+    options: {
+      isColor: boolean;
+      isDuplex: boolean;
+      quantity: number;
+      size: string;
+    },
   ) {
     const totalPages = files.reduce((sum, file) => sum + file.pages, 0);
 
-    const priceBreakdown = await this.pricingService.calculatePrice({
-      pages: totalPages,
-      isColor: options.isColor,
+    const sheetsNeeded = this.calculateSheets(
+      totalPages,
+      options.size as 'A4' | 'A3' | 'CARTA',
+      options.isDuplex,
+    );
+
+    console.log('🔍 Backend - calculatePrice:', {
+      files,
+      totalPages,
+      size: options.size,
       isDuplex: options.isDuplex,
-      quantity: options.quantity,
+      sheetsNeeded,
     });
 
+    const priceBreakdown = await this.pricingService.calculatePrice({
+      pages: sheetsNeeded,
+      isColor: options.isColor,
+      isDuplex: options.isDuplex,
+    });
+
+    console.log('💵 Backend - priceBreakdown:', priceBreakdown);
+
     return priceBreakdown;
+  }
+
+  private calculateSheets(
+    totalPages: number,
+    paperSize: 'A4' | 'A3' | 'CARTA',
+    isDuplex: boolean,
+  ): number {
+    // A3 puede contener 2 páginas A4, A4 y CARTA contienen 1 página
+    const pagesPerSheet = paperSize === 'A3' ? 2 : 1;
+
+    // Duplex permite imprimir en ambos lados de la hoja
+    const sidesPerSheet = isDuplex ? 2 : 1;
+
+    // Calcular hojas necesarias y redondear hacia arriba
+    const result = Math.ceil(totalPages / pagesPerSheet / sidesPerSheet);
+
+    console.log('📄 Backend - calculateSheets:', {
+      totalPages,
+      paperSize,
+      isDuplex,
+      pagesPerSheet,
+      sidesPerSheet,
+      formula: `Math.ceil(${totalPages} / ${pagesPerSheet} / ${sidesPerSheet})`,
+      result,
+    });
+
+    return result;
   }
 }

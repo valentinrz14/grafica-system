@@ -92,22 +92,32 @@ export default function PromotionsPage() {
               {promotions.map((promo) => (
                 <div
                   key={promo.id}
-                  className="bg-white rounded-xl shadow overflow-hidden hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105"
                 >
                   {/* Image */}
-                  {promo.imageUrl && (
-                    <div className="relative h-48 overflow-hidden">
+                  <div className="relative h-48 overflow-hidden">
+                    {promo.imageUrl ? (
                       <img
                         src={promo.imageUrl}
                         alt={promo.title || promo.name}
                         className="w-full h-full object-cover"
                       />
-                      {/* Discount Badge */}
-                      <div className="absolute top-3 right-3 bg-purple-600 text-white px-3 py-1 rounded-lg font-bold text-sm">
-                        {getDiscountText(promo)}
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center">
+                        <Tag className="h-20 w-20 text-white opacity-30" />
+                      </div>
+                    )}
+                    {/* Discount Badge - Mejorado */}
+                    <div className="absolute top-4 right-4">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur-md opacity-75 animate-pulse"></div>
+                        <span className="relative text-sm font-black text-white bg-gradient-to-r from-yellow-500 to-orange-600 px-5 py-2.5 rounded-full shadow-2xl border-2 border-white/40 flex items-center gap-2">
+                          <span className="text-2xl">🔥</span>
+                          {getDiscountText(promo)}
+                        </span>
                       </div>
                     </div>
-                  )}
+                  </div>
 
                   {/* Content */}
                   <div className="p-5">
@@ -123,7 +133,9 @@ export default function PromotionsPage() {
 
                     {/* Countdown Timer */}
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                      <span className="text-xs text-gray-500">Termina en:</span>
+                      <span className="text-xs text-gray-500 font-medium">
+                        Termina en:
+                      </span>
                       <CompactCountdownTimer endDate={promo.endDate} />
                     </div>
                   </div>

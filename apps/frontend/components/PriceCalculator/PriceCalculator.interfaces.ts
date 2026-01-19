@@ -5,4 +5,5 @@ export interface PriceCalculatorProps {
   onOptionsChange: (options: OrderOptions) => void;
   priceBreakdown: PriceBreakdown | null;
   isCalculating: boolean;
+  totalPages: number;
 }

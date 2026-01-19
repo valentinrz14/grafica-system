@@ -21,7 +21,20 @@ export class FilesController {
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    console.log('🔼 Upload request received:', {
+      originalName: file?.originalname,
+      size: file?.size,
+      mimetype: file?.mimetype,
+    });
+
     const result = await this.filesService.uploadFile(file);
+
+    console.log('📤 Upload result:', {
+      fileName: result.fileName,
+      pages: result.pages,
+      mimeType: result.mimeType,
+    });
+
     return {
       statusCode: HttpStatus.CREATED,
       data: result,
