@@ -38,14 +38,15 @@
     "class-validator": "^0.14.3",
     "compression": "^1.8.1",
     "dotenv": "^17.2.3",
+    "form-data": "^4.0.5",
     "handlebars": "^4.7.8",
     "helmet": "^8.1.0",
+    "mailgun.js": "^12.6.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pdf-parse": "^2.4.5",
     "prisma": "6.19.2",
     "reflect-metadata": "^0.2.2",
-    "resend": "^6.8.0",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {

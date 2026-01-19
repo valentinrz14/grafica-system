@@ -216,42 +216,47 @@ If a deployment fails:
    npx prisma migrate resolve --rolled-back migration_name
    ```
 
-## Email Configuration (Resend)
+## Email Configuration (Mailgun)
 
-This application uses **Resend** for email delivery, which works perfectly with Railway (no SMTP port blocking issues).
+This application uses **Mailgun** for email delivery, which works perfectly with Railway (no SMTP port blocking issues).
 
-### Setup Resend (Free - 5 minutes)
+### Setup Mailgun (Free - 5 minutes)
 
-1. **Create Free Account**: Visit https://resend.com
-   - Sign up with GitHub or email
-   - Free tier: 100 emails/day, 3,000 emails/month
+1. **Create Free Account**: Visit https://signup.mailgun.com/new/signup
+   - Sign up with email
+   - Free tier: 5,000 emails/month (no credit card required for first month)
 
-2. **Get API Key**:
-   - Go to **API Keys** section in dashboard
-   - Click **"Create API Key"**
-   - Give it a name (e.g., "Production Backend")
-   - Copy the generated key (starts with `re_`)
+2. **Get API Key and Domain**:
+   - Go to **Sending** → **Domain settings** in dashboard
+   - Under "Sandbox domains", you'll see your sandbox domain (e.g., `sandbox-abc123.mailgun.org`)
+   - Click on it to see the API key
+   - Copy both the **API key** (starts with `key-`) and the **domain**
 
-3. **Add to Railway**:
+3. **Add Authorized Recipients** (for sandbox domain):
+   - In the domain settings, scroll to "Authorized Recipients"
+   - Add the email addresses you want to test with
+   - Each recipient will receive a verification email
+   - Click the verification link in the email
+
+4. **Add to Railway**:
    - Go to your Railway service → **Variables** tab
-   - Add variable: `RESEND_API_KEY=re_your_key_here`
+   - Add variables:
+     - `MAILGUN_API_KEY=key_your_api_key_here`
+     - `MAILGUN_DOMAIN=sandbox-xxx.mailgun.org`
+     - `MAIL_FROM_NAME=Gráfica System`
+     - `MAIL_FROM_ADDRESS=noreply@sandbox-xxx.mailgun.org`
    - Railway will auto-redeploy
-
-4. **Configure Sender Email** (Optional):
-   - **Free tier**: Use `onboarding@resend.dev` (no verification needed)
-   - **Custom domain**: Verify your domain in Resend dashboard
-   - Update `MAIL_FROM_ADDRESS` in Railway variables
 
 ### Environment Variables
 
 ```bash
 # Required
-RESEND_API_KEY="re_abc123xyz..." # From Resend dashboard
+MAILGUN_API_KEY="key_abc123xyz..." # From Mailgun dashboard
+MAILGUN_DOMAIN="sandbox-xxx.mailgun.org" # Your sandbox domain
 
 # Optional (for customization)
 MAIL_FROM_NAME="Gráfica System" # Display name in emails
-MAIL_FROM_ADDRESS="onboarding@resend.dev" # Use this for free tier
-# MAIL_FROM_ADDRESS="noreply@yourdomain.com" # Or your verified domain
+MAIL_FROM_ADDRESS="noreply@sandbox-xxx.mailgun.org" # Use your sandbox/verified domain
 ```
 
 ### Testing Email Delivery
@@ -261,7 +266,7 @@ MAIL_FROM_ADDRESS="onboarding@resend.dev" # Use this for free tier
    ```bash
    # Create a test order through the app
    # Check logs for:
-   # ✅ Resend email service configured successfully
+   # ✅ Mailgun email service configured successfully
    # ✅ Order confirmation email sent successfully (ID: xxx)
    ```
 
@@ -272,17 +277,39 @@ MAIL_FROM_ADDRESS="onboarding@resend.dev" # Use this for free tier
    # Check Railway logs:
    railway logs | grep "email sent"
 
-   # Or check in Resend dashboard → Emails tab
+   # Or check in Mailgun dashboard → Logs tab
    # You'll see delivery status, opens, clicks, etc.
    ```
 
-### Why Resend over Gmail SMTP?
+### Sandbox vs Verified Domain
 
-| Feature              | Gmail SMTP  | Resend         |
+**Sandbox Domain** (Free tier):
+
+- Can send to **authorized recipients only** (must verify each email)
+- Perfect for testing and development
+- No domain verification required
+- Limited to 5,000 emails/month
+
+**Verified Domain** (Production):
+
+- Can send to **any recipient**
+- Requires domain ownership verification
+- Better deliverability
+- Required for production use
+
+To verify a domain:
+
+1. Go to **Sending** → **Domains** → **Add New Domain**
+2. Follow DNS verification steps
+3. Update `MAILGUN_DOMAIN` and `MAIL_FROM_ADDRESS` to use your domain
+
+### Why Mailgun over Gmail SMTP?
+
+| Feature              | Gmail SMTP  | Mailgun        |
 | -------------------- | ----------- | -------------- |
 | **Works on Railway** | ❌ Blocked  | ✅ Yes         |
-| **Free Tier**        | ❌ None     | ✅ 3,000/month |
-| **Setup Time**       | 10 minutes  | 3 minutes      |
+| **Free Tier**        | ❌ None     | ✅ 5,000/month |
+| **Setup Time**       | 10 minutes  | 5 minutes      |
 | **Deliverability**   | ⭐⭐⭐      | ⭐⭐⭐⭐⭐     |
 | **Tracking**         | ❌ No       | ✅ Yes         |
 | **API**              | SMTP (slow) | HTTP (fast)    |
@@ -294,22 +321,28 @@ MAIL_FROM_ADDRESS="onboarding@resend.dev" # Use this for free tier
 **Check logs for**:
 
 ```
-⚠️  Email not configured. Set RESEND_API_KEY...
+⚠️  Email not configured. Set MAILGUN_API_KEY...
 ```
 
 **Solution**:
 
-1. Verify `RESEND_API_KEY` is set in Railway variables
-2. Check the key is valid (not expired)
-3. Check Resend dashboard for errors
+1. Verify `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` are set in Railway variables
+2. Check the API key is valid (starts with `key-`)
+3. Check Mailgun dashboard → Logs for errors
 
-**Issue**: "Invalid API key"
+**Issue**: "Forbidden: sandbox domain only allows authorized recipients"
 
 **Solution**:
 
-1. Regenerate API key in Resend dashboard
-2. Update `RESEND_API_KEY` in Railway
-3. Wait for auto-redeploy
+1. Go to Mailgun dashboard → Your sandbox domain
+2. Scroll to "Authorized Recipients"
+3. Add the recipient email address
+4. Verify the email (click link sent to recipient)
+
+OR:
+
+1. Verify your own domain in Mailgun
+2. Update `MAILGUN_DOMAIN` and `MAIL_FROM_ADDRESS` to use your domain
 
 ## Performance Benchmarks
 

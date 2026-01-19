@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Resend } from 'resend';
+import Mailgun from 'mailgun.js';
+import formData from 'form-data';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -27,16 +28,29 @@ export interface OrderEmailData {
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private resend: Resend | null = null;
+  private mailgunClient: any = null;
+  private mailgunDomain: string | null = null;
   private isConfigured = false;
 
   constructor() {
-    // Check if Resend API key is configured
-    const apiKey = process.env.RESEND_API_KEY;
+    // Check if Mailgun is configured
+    const apiKey = process.env.MAILGUN_API_KEY;
+    const domain = process.env.MAILGUN_DOMAIN;
 
-    if (!apiKey || apiKey === 'your-resend-api-key-here') {
+    if (!apiKey || apiKey === 'your-mailgun-api-key-here') {
       this.logger.warn(
-        '⚠️  Email not configured. Set RESEND_API_KEY in .env to enable email notifications.',
+        '⚠️  Email not configured. Set MAILGUN_API_KEY in .env to enable email notifications.',
+      );
+      this.logger.warn(
+        '   Orders will be created successfully, but confirmation emails will not be sent.',
+      );
+      this.isConfigured = false;
+      return;
+    }
+
+    if (!domain || domain === 'sandbox-xxx.mailgun.org') {
+      this.logger.warn(
+        '⚠️  Email not configured. Set MAILGUN_DOMAIN in .env to enable email notifications.',
       );
       this.logger.warn(
         '   Orders will be created successfully, but confirmation emails will not be sent.',
@@ -46,12 +60,18 @@ export class MailService {
     }
 
     try {
-      // Initialize Resend client
-      this.resend = new Resend(apiKey);
+      // Initialize Mailgun client
+      const mailgun = new Mailgun(formData);
+      this.mailgunClient = mailgun.client({
+        username: 'api',
+        key: apiKey,
+        url: 'https://api.mailgun.net', // Use https://api.eu.mailgun.net for EU region
+      });
+      this.mailgunDomain = domain;
       this.isConfigured = true;
-      this.logger.log('✅ Resend email service configured successfully');
+      this.logger.log('✅ Mailgun email service configured successfully');
     } catch (error) {
-      this.logger.error('❌ Error initializing Resend:', error);
+      this.logger.error('❌ Error initializing Mailgun:', error);
       this.logger.warn(
         '   Orders will be created, but emails will not be sent.',
       );
@@ -62,9 +82,9 @@ export class MailService {
   async sendOrderConfirmation(orderData: OrderEmailData): Promise<void> {
     try {
       // Check if email service is configured
-      if (!this.isConfigured || !this.resend) {
+      if (!this.isConfigured || !this.mailgunClient || !this.mailgunDomain) {
         this.logger.log(
-          `Order ${orderData.orderId} created. Email not sent (Resend not configured).`,
+          `Order ${orderData.orderId} created. Email not sent (Mailgun not configured).`,
         );
         return;
       }
@@ -99,28 +119,24 @@ export class MailService {
         frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
       });
 
-      // Send email via Resend
+      // Send email via Mailgun
       const fromEmail =
-        process.env.MAIL_FROM_ADDRESS || 'onboarding@resend.dev';
+        process.env.MAIL_FROM_ADDRESS || `noreply@${this.mailgunDomain}`;
       const fromName = process.env.MAIL_FROM_NAME || 'Gráfica System';
 
-      const result = await this.resend.emails.send({
-        from: `${fromName} <${fromEmail}>`,
-        to: orderData.userEmail,
-        subject: `Confirmación de Pedido #${orderData.orderId.substring(0, 8)}`,
-        html,
-      });
+      const result = await this.mailgunClient.messages.create(
+        this.mailgunDomain,
+        {
+          from: `${fromName} <${fromEmail}>`,
+          to: [orderData.userEmail],
+          subject: `Confirmación de Pedido #${orderData.orderId.substring(0, 8)}`,
+          html,
+        },
+      );
 
-      if (result.error) {
-        this.logger.error(
-          'Failed to send order confirmation email:',
-          result.error,
-        );
-      } else {
-        this.logger.log(
-          `✅ Order confirmation email sent successfully (ID: ${result.data?.id})`,
-        );
-      }
+      this.logger.log(
+        `✅ Order confirmation email sent successfully (ID: ${result.id})`,
+      );
     } catch (error) {
       this.logger.error('Failed to send order confirmation email:', error);
       // Don't throw - we don't want email failures to fail order creation
