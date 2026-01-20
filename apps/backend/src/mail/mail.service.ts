@@ -3,26 +3,7 @@ import sgMail from '@sendgrid/mail';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs';
 import * as path from 'path';
-
-export interface OrderEmailData {
-  orderId: string;
-  userEmail: string;
-  userName: string;
-  files: Array<{
-    originalName: string;
-    pages: number;
-  }>;
-  options: {
-    size: string;
-    isColor: boolean;
-    isDuplex: boolean;
-    quantity: number;
-  };
-  totalPrice: number;
-  pickupDate?: string; // Formatted date string
-  pickupTime?: string; // Time in HH:mm format
-  comment?: string;
-}
+import { OrderEmailData } from './mail.interface';
 
 @Injectable()
 export class MailService {

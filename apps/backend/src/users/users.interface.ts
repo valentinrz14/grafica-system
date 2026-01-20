@@ -11,3 +11,10 @@ export interface CreateUserData {
   oauthProvider?: string;
   profileComplete?: boolean;
 }
+
+export interface UpdateProfileData {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  profileComplete?: boolean;
+}

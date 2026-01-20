@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import type { CalculatePriceDto } from './products.service';
 import { Public } from '../auth/decorators/public.decorator';
+import type { CalculatePriceDto } from './products.interface';
 
 @Controller('products')
 @Public()

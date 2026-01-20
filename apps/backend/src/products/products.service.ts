@@ -1,11 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-
-export interface CalculatePriceDto {
-  productId: string;
-  selectedOptions: Record<string, string>; // { optionName: value }
-  quantity?: number;
-}
+import { CalculatePriceDto } from './products.interface';
 
 @Injectable()
 export class ProductsService {

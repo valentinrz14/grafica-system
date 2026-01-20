@@ -1,13 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserData } from './users.interface';
-
-interface UpdateProfileData {
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
-  profileComplete?: boolean;
-}
+import { CreateUserData, UpdateProfileData } from './users.interface';
 
 @Injectable()
 export class UsersService {
